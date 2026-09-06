@@ -1,17 +1,76 @@
 {
   "meta": {
-    "updated_at": "2026-09-06T05:31:42.291522+02:00",
+    "updated_at": "2026-09-06T05:40:52.151894+02:00",
     "max_price_eur": 400,
     "max_average_minutes": 60,
     "max_single_trip_minutes": 75,
     "accepted_count": 26,
-    "new_accepted_this_run": 4,
+    "new_accepted_this_run": 0,
     "sources": [
       "4zida",
       "nekretnine_rs",
       "halo_oglasi",
       "oglasi_rs"
     ],
+    "pipeline_stats": {
+      "4zida": {
+        "candidates": 20,
+        "unseen_selected": 1,
+        "parsed_ok": 1,
+        "no_photos": 1,
+        "over_price": 0,
+        "geocoded_or_coords": 0,
+        "missing_coords": 0,
+        "route_insufficient": 0,
+        "over_average": 0,
+        "over_single": 0,
+        "accepted": 0
+      },
+      "nekretnine_rs": {
+        "candidates": 0,
+        "unseen_selected": 0,
+        "parsed_ok": 0,
+        "no_photos": 0,
+        "over_price": 0,
+        "geocoded_or_coords": 0,
+        "missing_coords": 0,
+        "route_insufficient": 0,
+        "over_average": 0,
+        "over_single": 0,
+        "accepted": 0
+      },
+      "halo_oglasi": {
+        "candidates": 0,
+        "unseen_selected": 0,
+        "parsed_ok": 0,
+        "no_photos": 0,
+        "over_price": 0,
+        "geocoded_or_coords": 0,
+        "missing_coords": 0,
+        "route_insufficient": 0,
+        "over_average": 0,
+        "over_single": 0,
+        "accepted": 0
+      },
+      "oglasi_rs": {
+        "candidates": 24,
+        "unseen_selected": 5,
+        "parsed_ok": 5,
+        "no_photos": 0,
+        "over_price": 0,
+        "geocoded_or_coords": 0,
+        "missing_coords": 5,
+        "route_insufficient": 0,
+        "over_average": 0,
+        "over_single": 0,
+        "accepted": 0
+      }
+    },
+    "total_by_source": {
+      "4zida": 19,
+      "oglasi_rs": 2,
+      "halo_oglasi": 5
+    },
     "routing_method": "Official Belgrade GTFS; schedule-based, no live traffic"
   },
   "destinations": [
