@@ -221,15 +221,19 @@ class FourZidaScraper:
         return value
 
     @staticmethod
-    def _original_photo_key(url: str) -> str | None:
+    def _original_photo_info(url: str) -> tuple[str | None, str | None]:
         """
-        4zida resizer URL ima oblik:
-        .../rs:fit:1920:1080:0/<base64>.webp
+        Iz 4zida resizer URL-a dobija:
+          (listing_id, photo_id)
 
-        Base64 deo se dekodira npr. u:
-        local:///6a9a.../4464bdb383_wm
+        Npr:
+          local:///6a9189af15c8c84d4707a693/7f563d2f1f_wm
+        postaje:
+          ("6a9189af15c8c84d4707a693", "7f563d2f1f")
 
-        Sve resize/format varijante iste fotografije zato dobijaju isti key.
+        Tako:
+        - različite rezolucije iste fotografije postaju jedan zapis;
+        - fotografije drugih oglasa / preporuka ne mogu da upadnu u galeriju.
         """
         try:
             p = urlparse(url)
@@ -238,16 +242,28 @@ class FourZidaScraper:
             padding = "=" * ((4 - len(encoded) % 4) % 4)
             decoded = base64.urlsafe_b64decode(encoded + padding).decode("utf-8", "ignore")
 
-            # Samo lokalni photo resursi.
             if not decoded.startswith("local:///"):
-                return None
+                return None, None
 
-            key = decoded.split("/")[-1]
-            key = re.sub(r"_wm$", "", key, flags=re.I)
-            key = key.strip()
-            return key.lower() if key else None
+            relative = decoded[len("local:///"):].strip("/")
+            parts = [x for x in relative.split("/") if x]
+            if len(parts) < 2:
+                return None, None
+
+            listing_id = parts[0].lower()
+            photo_key = parts[-1]
+            photo_key = re.sub(r"_wm$", "", photo_key, flags=re.I).strip().lower()
+
+            if not re.fullmatch(r"[0-9a-f]{24}", listing_id, re.I):
+                return None, None
+
+            return listing_id, photo_key or None
         except Exception:
-            return None
+            return None, None
+
+    @classmethod
+    def _original_photo_key(cls, url: str) -> str | None:
+        return cls._original_photo_info(url)[1]
 
     @staticmethod
     def _quality_score(url: str) -> tuple[int, int, int]:
@@ -270,31 +286,45 @@ class FourZidaScraper:
         return area, mode_bonus, jpeg_bonus
 
     @classmethod
-    def clean_image_urls(cls, urls: list[str] | None) -> list[str]:
+    def clean_image_urls(
+        cls,
+        urls: list[str] | None,
+        expected_listing_id: str | None = None,
+    ) -> list[str]:
+        """
+        Zadržava jednu najbolju verziju po originalnoj fotografiji.
+
+        Ako je prosleđen expected_listing_id, prihvataju se SAMO fotografije
+        čiji interni 4zida put pripada tom konkretnom oglasu.
+        """
         best: dict[str, tuple[tuple[int, int, int], str]] = {}
         order: list[str] = []
+        expected = expected_listing_id.lower() if expected_listing_id else None
 
         for raw in urls or []:
             url = cls._normalise_resizer_url(raw)
             if not url:
                 continue
 
-            key = cls._original_photo_key(url)
-            if not key:
+            listing_id, key = cls._original_photo_info(url)
+            if not listing_id or not key:
+                continue
+
+            if expected and listing_id != expected:
                 continue
 
             score = cls._quality_score(url)
+
             if key not in best:
                 best[key] = (score, url)
                 order.append(key)
             elif score > best[key][0]:
                 best[key] = (score, url)
 
-        # Zadrži redosled originalnih fotografija iz oglasa.
         return [best[key][1] for key in order if key in best]
 
     @classmethod
-    def _extract_images(cls, soup: BeautifulSoup, html: str) -> list[str]:
+    def _extract_images(cls, soup: BeautifulSoup, html: str, source_id: str) -> list[str]:
         candidates: list[str] = []
 
         # Ono što browser stvarno renderuje.
@@ -321,12 +351,16 @@ class FourZidaScraper:
             )
         )
 
-        return cls.clean_image_urls(candidates)
+        return cls.clean_image_urls(candidates, expected_listing_id=source_id)
 
-    def refresh_gallery(self, url: str) -> list[str]:
+    def refresh_gallery(self, url: str, source_id: str) -> list[str]:
         time.sleep(self.delay_seconds)
         html = self._get(url)
-        return self._extract_images(BeautifulSoup(html, "html.parser"), html)
+        return self._extract_images(
+            BeautifulSoup(html, "html.parser"),
+            html,
+            source_id,
+        )
 
     def check_active(self, url: str, source_id: str) -> bool | None:
         time.sleep(self.delay_seconds)
@@ -378,7 +412,7 @@ class FourZidaScraper:
         )
 
         lat, lon = self._extract_coordinates(soup, html)
-        images = self._extract_images(soup, html)
+        images = self._extract_images(soup, html, candidate.source_id)
 
         return Listing(
             source="4zida",

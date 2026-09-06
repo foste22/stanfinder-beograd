@@ -63,6 +63,7 @@ def main() -> None:
     state.setdefault("seen", {})
     state.setdefault("listings", [])
     state.setdefault("active_check_cursor", 0)
+    state.setdefault("gallery_refresh_cursor", 0)
 
     scraper = FourZidaScraper(
         source_cfg["search_url"],
@@ -73,38 +74,30 @@ def main() -> None:
     now_iso = now.isoformat()
 
     # ---------------------------------------------------------------
-    # 1. OČISTI GALERIJE POSTOJEĆIH OGLASA
-    #    Ako nakon deduplikacije nema nijedne validne fotografije,
-    #    oglas više nije kandidat za StanFinder.
+    # 1. OČISTI VEĆ SAČUVANE URL-OVE, ALI NE VERUJ STAROJ GALERIJI
     # ---------------------------------------------------------------
-    cleaned_existing = []
-    removed_no_photos = 0
-
+    #
+    # Starije verzije StanFinder-a su nekim oglasima sačuvale samo
+    # naslovnu fotografiju. Zato ih ovde NE izbacujemo samo zato što
+    # trenutno imaju 0/1 slike u JSON-u. Cela galerija će se ponovo
+    # povlačiti sa originalnog oglasa u rotirajućim batch-evima.
+    # ---------------------------------------------------------------
     for rec in state["listings"]:
         if rec.get("source") != "4zida":
-            cleaned_existing.append(rec)
             continue
 
         old_images = rec.get("images")
         if not isinstance(old_images, list):
             old_images = [rec.get("image_url")] if rec.get("image_url") else []
 
-        images = scraper.clean_image_urls(old_images)
+        images = scraper.clean_image_urls(
+            old_images,
+            expected_listing_id=rec.get("source_id"),
+        )
         rec["images"] = images
         rec["image_url"] = images[0] if images else ""
 
-        if not images:
-            state["seen"][rec["id"]] = {
-                "status": "no_valid_photos",
-                "seen_at": now_iso,
-                "url": rec.get("url"),
-            }
-            removed_no_photos += 1
-            continue
-
-        cleaned_existing.append(rec)
-
-    state["listings"] = cleaned_existing
+    removed_no_photos = 0
 
     # ---------------------------------------------------------------
     # 2. ROTIRAJUĆA PROVERA DA LI POSTOJEĆI OGLASI JOŠ POSTOJE
@@ -139,14 +132,103 @@ def main() -> None:
 
         state["active_check_cursor"] = start + batch_size
 
+
+    # ---------------------------------------------------------------
+    # 3. PONOVO POVUCI CELOKUPNU GALERIJU POSTOJEĆIH OGLASA
+    # ---------------------------------------------------------------
+    #
+    # Prioritet imaju oglasi koji trenutno imaju 0 ili 1 fotografiju.
+    # Zatim se ostali oglasi periodično osvežavaju u rotaciji.
+    #
+    # 8 oglasa po pokretanju = dovoljno brzo da se stari podaci poprave,
+    # a da ne pravimo nepotrebno veliki broj zahteva ka 4zida.
+    # ---------------------------------------------------------------
+    four_zida_records = [
+        rec for rec in state["listings"]
+        if rec.get("source") == "4zida" and rec.get("url") and rec.get("source_id")
+    ]
+
+    priority = [
+        rec for rec in four_zida_records
+        if len(rec.get("images") or []) <= 1
+    ]
+
+    remaining = [
+        rec for rec in four_zida_records
+        if rec not in priority
+    ]
+
+    refresh_batch = priority[:8]
+
+    if len(refresh_batch) < 8 and remaining:
+        cursor = int(state.get("gallery_refresh_cursor", 0)) % len(remaining)
+        need = 8 - len(refresh_batch)
+        for i in range(min(need, len(remaining))):
+            refresh_batch.append(remaining[(cursor + i) % len(remaining)])
+        state["gallery_refresh_cursor"] = cursor + need
+
+    gallery_refreshed = 0
+    no_photo_ids = set()
+
+    for rec in refresh_batch:
+        try:
+            fresh_images = scraper.refresh_gallery(
+                rec["url"],
+                rec["source_id"],
+            )
+
+            # Ovo je uspešno učitana originalna stranica oglasa.
+            # Ako ona nema nijednu validnu fotografiju tog oglasa,
+            # korisnik želi da taj stan ne ulazi u razmatranje.
+            if not fresh_images:
+                no_photo_ids.add(rec["id"])
+                state["seen"][rec["id"]] = {
+                    "status": "no_valid_photos",
+                    "seen_at": now_iso,
+                    "url": rec.get("url"),
+                }
+                removed_no_photos += 1
+                continue
+
+            rec["images"] = fresh_images
+            rec["image_url"] = fresh_images[0]
+            rec["gallery_refreshed_at"] = now_iso
+            gallery_refreshed += 1
+
+            print(
+                f"Galerija osvežena: {rec.get('address')} -> "
+                f"{len(fresh_images)} originalnih fotografija"
+            )
+
+        except Exception as exc:
+            # Privremena greška ne sme ukloniti stan sa sajta.
+            print(
+                f"[WARN] Galerija nije osvežena za "
+                f"{rec.get('address')}: {exc}"
+            )
+
+    if no_photo_ids:
+        state["listings"] = [
+            rec for rec in state["listings"]
+            if rec.get("id") not in no_photo_ids
+        ]
+
     # ---------------------------------------------------------------
     # 3. NOVI OGLASI
     # ---------------------------------------------------------------
     candidates = scraper.get_latest_candidates()
-    unseen = [
-        c for c in candidates
-        if listing_key("4zida", c.source_id) not in state["seen"]
-    ][: int(source_cfg.get("max_new_details_per_run", 20))]
+    unseen = []
+    for c in candidates:
+        key = listing_key("4zida", c.source_id)
+        previous = state["seen"].get(key, {})
+        previous_status = previous.get("status") if isinstance(previous, dict) else None
+
+        # Ponovo proveri oglase koje je neka starija verzija parsera
+        # možda pogrešno označila kao "bez fotografija".
+        if key not in state["seen"] or previous_status == "no_valid_photos":
+            unseen.append(c)
+
+    unseen = unseen[: int(source_cfg.get("max_new_details_per_run", 20))]
 
     parsed = []
 
@@ -332,7 +414,8 @@ def main() -> None:
 
     print(
         f"Gotovo. Novi kandidati={len(unseen)}, za routing={len(parsed)}, "
-        f"prihvaćeni={len(accepted_now)}, bez fotografija uklonjeno={removed_no_photos}, "
+        f"prihvaćeni={len(accepted_now)}, galerije osvežene={gallery_refreshed}, "
+        f"bez fotografija uklonjeno={removed_no_photos}, "
         f"aktivnih na sajtu={len(state['listings'])}"
     )
 
