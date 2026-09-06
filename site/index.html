@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>StanFinder Beograd</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f6f7;
+      --card: #ffffff;
+      --text: #16181b;
+      --muted: #69727d;
+      --border: #dfe3e7;
+      --good: #1b8f4b;
+      --ok: #c99500;
+      --warn: #db6b12;
+      --accent: #2563eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101214;
+        --card: #171a1d;
+        --text: #f0f2f4;
+        --muted: #a5adb5;
+        --border: #30363d;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background: var(--bg); color: var(--text); }
+    header { padding: 18px 20px 8px; max-width: 1400px; margin: auto; }
+    h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 2.2rem); }
+    .sub { color: var(--muted); }
+    .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .chip { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 8px 11px; font-size: 14px; }
+    main { max-width: 1400px; margin: auto; padding: 12px 20px 30px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr); gap: 16px; align-items: start; }
+    #map { height: 650px; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .toolbar { padding: 12px; display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--border); }
+    input, select { font: inherit; padding: 9px 10px; border-radius: 9px; border: 1px solid var(--border); background: var(--card); color: var(--text); min-width: 0; }
+    input { flex: 1 1 180px; }
+    select { flex: 0 1 180px; }
+    .list { max-height: 590px; overflow: auto; }
+    .item { padding: 13px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .item:hover { background: color-mix(in srgb, var(--card) 92%, var(--accent)); }
+    .item:last-child { border-bottom: 0; }
+    .row { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; }
+    .price { font-weight: 800; font-size: 1.1rem; white-space: nowrap; }
+    .addr { font-weight: 650; }
+    .meta { color: var(--muted); font-size: 13px; margin-top: 5px; line-height: 1.45; }
+    .time { font-weight: 750; }
+    .badge { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); margin-left: 6px; }
+    .empty { padding: 34px 18px; text-align: center; color: var(--muted); }
+    a.open { display: inline-block; margin-top: 7px; color: var(--accent); font-weight: 700; text-decoration: none; }
+    a.open:hover { text-decoration: underline; }
+    .legend { padding-top: 8px; font-size: 13px; color: var(--muted); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin: 0 4px 0 10px; }
+    .dot:first-child { margin-left: 0; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      #map { height: 460px; }
+      .list { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>StanFinder Beograd</h1>
+    <div class="sub">Stanovi do 400 € koji prolaze filter javnog prevoza do obe lokacije.</div>
+    <div class="stats">
+      <span class="chip">Cena ≤ <strong id="maxPrice">400 €</strong></span>
+      <span class="chip">Prosek ≤ <strong id="maxAvg">60 min</strong></span>
+      <span class="chip">Najgori uzorak ≤ <strong id="maxTrip">75 min</strong></span>
+      <span class="chip">Pronađeno: <strong id="count">0</strong></span>
+      <span class="chip">Osveženo: <strong id="updated">—</strong></span>
+    </div>
+  </header>
+
+  <main>
+    <div class="layout">
+      <div>
+        <div id="map" aria-label="Mapa stanova"></div>
+        <div class="legend">
+          <span class="dot" style="background:#1b8f4b"></span> ≤35 min
+          <span class="dot" style="background:#c99500"></span> 35–45 min
+          <span class="dot" style="background:#db6b12"></span> 45–60 min
+          · plavi markeri = fakulteti
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="toolbar">
+          <input id="search" type="search" placeholder="Pretraži ulicu / kraj…">
+          <select id="sort">
+            <option value="time">Najbrža ruta</option>
+            <option value="price">Najniža cena</option>
+            <option value="new">Najnovije pronađen</option>
+          </select>
+        </div>
+        <div id="list" class="list"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map("map").setView([44.8176, 20.4633], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markerById = new Map();
+    let allListings = [];
+
+    function colorFor(minutes) {
+      if (minutes <= 35) return "#1b8f4b";
+      if (minutes <= 45) return "#c99500";
+      return "#db6b12";
+    }
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+    function fmtDate(s) {
+      if (!s) return "—";
+      const d = new Date(s);
+      return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString("sr-RS");
+    }
+
+    function renderList() {
+      const q = document.getElementById("search").value.trim().toLowerCase();
+      const mode = document.getElementById("sort").value;
+      let rows = allListings.filter(x =>
+        !q || `${x.address} ${x.title}`.toLowerCase().includes(q)
+      );
+
+      rows = [...rows].sort((a,b) => {
+        if (mode === "price") return a.price_eur - b.price_eur || a.average_minutes - b.average_minutes;
+        if (mode === "new") return new Date(b.first_seen_at) - new Date(a.first_seen_at);
+        return a.average_minutes - b.average_minutes || a.price_eur - b.price_eur;
+      });
+
+      const list = document.getElementById("list");
+      if (!rows.length) {
+        list.innerHTML = '<div class="empty">Još nema oglasa koji prolaze filter ili pretraga nema pogodaka.</div>';
+        return;
+      }
+
+      list.innerHTML = rows.map(x => `
+        <article class="item" data-id="${esc(x.id)}" tabindex="0">
+          <div class="row">
+            <div class="addr">${esc(x.address)}${x.approximate_location ? '<span class="badge">≈ lokacija</span>' : ''}</div>
+            <div class="price">${esc(x.price_eur)} €</div>
+          </div>
+          <div class="meta">
+            ${x.area_m2 ? `${esc(x.area_m2)} m² · ` : ""}${x.rooms ? `${esc(x.rooms)} · ` : ""}
+            <span class="time">${esc(x.average_minutes)} min prosek</span><br>
+            Fakultet 1: ${esc(x.destination_averages?.[0] ?? "?")} min ·
+            Fakultet 2: ${esc(x.destination_averages?.[1] ?? "?")} min ·
+            najgori uzorak: ${esc(x.worst_sample_minutes)} min
+          </div>
+          <a class="open" href="${esc(x.url)}" target="_blank" rel="noopener">Otvori originalni oglas ↗</a>
+        </article>
+      `).join("");
+
+      list.querySelectorAll(".item").forEach(el => {
+        const activate = () => {
+          const marker = markerById.get(el.dataset.id);
+          if (marker) {
+            map.setView(marker.getLatLng(), 16);
+            marker.openPopup();
+          }
+        };
+        el.addEventListener("click", e => {
+          if (e.target.closest("a")) return;
+          activate();
+        });
+        el.addEventListener("keydown", e => {
+          if (e.key === "Enter") activate();
+        });
+      });
+    }
+
+    async function init() {
+      const r = await fetch(`data/listings.json?t=${Date.now()}`, {cache:"no-store"});
+      if (!r.ok) throw new Error("Ne mogu da učitam data/listings.json");
+      const data = await r.json();
+
+      document.getElementById("maxPrice").textContent = `${data.meta.max_price_eur} €`;
+      document.getElementById("maxAvg").textContent = `${data.meta.max_average_minutes} min`;
+      document.getElementById("maxTrip").textContent = `${data.meta.max_single_trip_minutes} min`;
+      document.getElementById("count").textContent = data.listings.length;
+      document.getElementById("updated").textContent = fmtDate(data.meta.updated_at);
+
+      const bounds = [];
+
+      (data.destinations || []).forEach((d, i) => {
+        const marker = L.circleMarker([d.lat, d.lon], {
+          radius: 9, color: "#2563eb", weight: 3, fillColor: "#2563eb", fillOpacity: .55
+        }).addTo(map);
+        marker.bindPopup(`<strong>${esc(d.name)}</strong>`);
+        bounds.push([d.lat, d.lon]);
+      });
+
+      allListings = data.listings || [];
+      allListings.forEach(x => {
+        const c = colorFor(x.average_minutes);
+        const marker = L.circleMarker([x.lat, x.lon], {
+          radius: 8, color: c, weight: 2, fillColor: c, fillOpacity: .72
+        }).addTo(map);
+
+        marker.bindPopup(`
+          <strong>${esc(x.address)}</strong><br>
+          ${esc(x.price_eur)} € · ${esc(x.average_minutes)} min prosek<br>
+          F1 ${esc(x.destination_averages?.[0] ?? "?")} min ·
+          F2 ${esc(x.destination_averages?.[1] ?? "?")} min<br>
+          ${x.approximate_location ? "<em>Približna lokacija oglasa</em><br>" : ""}
+          <a href="${esc(x.url)}" target="_blank" rel="noopener">Otvori oglas ↗</a>
+        `);
+        markerById.set(x.id, marker);
+        bounds.push([x.lat, x.lon]);
+      });
+
+      if (bounds.length >= 2) map.fitBounds(bounds, {padding:[30,30], maxZoom:14});
+      renderList();
+    }
+
+    document.getElementById("search").addEventListener("input", renderList);
+    document.getElementById("sort").addEventListener("change", renderList);
+
+    init().catch(err => {
+      console.error(err);
+      document.getElementById("list").innerHTML =
+        `<div class="empty">Greška pri učitavanju podataka: ${esc(err.message)}</div>`;
+    });
+  </script>
+</body>
+</html>
