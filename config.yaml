@@ -38,13 +38,16 @@ sources:
 
   nekretnine_rs:
     enabled: true
-    search_url: "https://www.nekretnine.rs/izdavanje-stanova/beograd/?prezzoMassimo=400&criterio=dataModifica_desc"
-    max_new_details_per_run: 10
+    search_url: "https://www.nekretnine.rs/izdavanje-stanova/beograd/?criterio=rilevanza&prezzoMassimo=416&prezzoMinimo=224"
+    max_new_details_per_run: 16
     request_delay_seconds: 1.3
 
   halo_oglasi:
     enabled: true
-    search_url: "https://www.halooglasi.com/nekretnine/izdavanje-stanova/beograd"
+    # Javni Halo prikaz koji ne vraća 403 kao desktop www verzija.
+    search_url: "https://smsprint.halooglasi.com/nekretnine/izdavanje-stanova/beograd"
+    max_new_details_per_run: 14
+    request_delay_seconds: 1.5
     max_new_details_per_run: 8
     request_delay_seconds: 1.5
 
