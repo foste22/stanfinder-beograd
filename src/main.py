@@ -34,18 +34,17 @@ def sample_datetimes(timezone_name: str, times: list[str]) -> list[datetime]:
     tz = ZoneInfo(timezone_name)
     now = datetime.now(tz)
     base = next_workday(now)
-
     result = []
+
     for t in times:
         hh, mm = map(int, t.split(":"))
         dt = base.replace(hour=hh, minute=mm, second=0, microsecond=0)
-
         if dt <= now:
             dt += timedelta(days=1)
             while dt.weekday() >= 5:
                 dt += timedelta(days=1)
-
         result.append(dt)
+
     return result
 
 
@@ -63,23 +62,64 @@ def main() -> None:
     state = load_state()
     state.setdefault("seen", {})
     state.setdefault("listings", [])
-
-    if not source_cfg.get("enabled", True):
-        raise RuntimeError("Nijedan izvor nije uključen.")
+    state.setdefault("active_check_cursor", 0)
 
     scraper = FourZidaScraper(
         source_cfg["search_url"],
         delay_seconds=float(source_cfg.get("request_delay_seconds", 1.2)),
     )
 
+    now = datetime.now(ZoneInfo(app_cfg["timezone"]))
+    now_iso = now.isoformat()
+
+    # ------------------------------------------------------------------
+    # 1. Proveri deo postojećih oglasa da mapa ne ostane puna izdatih stanova.
+    #    Rotirajući cursor znači da se svi aktivni oglasi periodično provere,
+    #    ali ne bombardujemo portal pri svakom pokretanju.
+    # ------------------------------------------------------------------
+    existing = state["listings"]
+    if existing:
+        batch_size = min(10, len(existing))
+        start = int(state.get("active_check_cursor", 0)) % len(existing)
+        indexes = [(start + i) % len(existing) for i in range(batch_size)]
+        to_remove = set()
+
+        for idx in indexes:
+            rec = existing[idx]
+            if rec.get("source") != "4zida":
+                continue
+            try:
+                active = scraper.check_active(
+                    rec.get("url", ""),
+                    rec.get("source_id", ""),
+                )
+                if active is False:
+                    key = rec["id"]
+                    print(f"Neaktivan oglas: {rec.get('address')} -> uklanjam sa sajta")
+                    state["seen"][key] = {
+                        "status": "inactive",
+                        "seen_at": now_iso,
+                        "url": rec.get("url"),
+                    }
+                    to_remove.add(key)
+            except Exception as exc:
+                print(f"[WARN] Provera aktivnosti nije uspela: {exc}")
+
+        if to_remove:
+            state["listings"] = [
+                x for x in state["listings"] if x.get("id") not in to_remove
+            ]
+
+        state["active_check_cursor"] = start + batch_size
+
+    # ------------------------------------------------------------------
+    # 2. Novi oglasi
+    # ------------------------------------------------------------------
     candidates = scraper.get_latest_candidates()
     unseen = [
         c for c in candidates
         if listing_key("4zida", c.source_id) not in state["seen"]
     ][: int(source_cfg.get("max_new_details_per_run", 20))]
-
-    now = datetime.now(ZoneInfo(app_cfg["timezone"]))
-    now_iso = now.isoformat()
 
     parsed = []
     for c in unseen:
@@ -89,11 +129,9 @@ def main() -> None:
             if item is None:
                 state["seen"][key] = {"status": "parse_failed", "seen_at": now_iso}
                 continue
-
             if item.price_eur > int(app_cfg["max_price_eur"]):
                 state["seen"][key] = {"status": "over_price", "seen_at": now_iso}
                 continue
-
             if item.lat is None or item.lon is None:
                 state["seen"][key] = {
                     "status": "missing_map_coordinates",
@@ -102,9 +140,7 @@ def main() -> None:
                     "url": item.url,
                 }
                 continue
-
             parsed.append(item)
-
         except Exception as exc:
             print(f"[WARN] Neuspešno čitanje {c.url}: {exc}")
 
@@ -122,12 +158,11 @@ def main() -> None:
             max_transfer_walk_m=float(route_cfg.get("max_transfer_walk_m", 350)),
             max_transit_rides=int(route_cfg.get("max_transit_rides", 4)),
         )
-
         sample_times = sample_datetimes(app_cfg["timezone"], route_cfg["sample_times"])
 
         for item in parsed:
             key = listing_key(item.source, item.source_id)
-            per_dest: dict[int, list[float]] = {d: [] for d in range(len(destinations))}
+            per_dest = {d: [] for d in range(len(destinations))}
             route_failed = False
 
             print(f"Računam: {item.address} / {item.price_eur} €")
@@ -144,7 +179,6 @@ def main() -> None:
                         print(f"[WARN] Ruta nije izračunata: {exc}")
                         route_failed = True
                         minutes = None
-
                     if minutes is not None:
                         per_dest[di].append(minutes)
 
@@ -161,7 +195,6 @@ def main() -> None:
                 round(statistics.mean(per_dest[d]), 1)
                 for d in range(len(destinations))
             ]
-
             all_samples = [x for vals in per_dest.values() for x in vals]
             overall_avg = round(statistics.mean(all_samples), 1)
             worst_trip = round(max(all_samples), 1)
@@ -188,7 +221,8 @@ def main() -> None:
                 "source_id": item.source_id,
                 "title": item.title,
                 "url": item.url,
-                "image_url": item.image_url,
+                "images": item.images,
+                "image_url": item.images[0] if item.images else "",
                 "price_eur": item.price_eur,
                 "address": item.address,
                 "formatted_address": item.address,
@@ -208,47 +242,34 @@ def main() -> None:
                 "first_seen_at": now_iso,
             }
 
-            existing_index = next(
-                (idx for idx, x in enumerate(state["listings"]) if x["id"] == key),
-                None,
-            )
-            if existing_index is None:
-                state["listings"].append(record)
-                accepted_now.append(record)
-            else:
-                # Sačuvaj prvobitni datum ako je oglas već postojao.
-                old = state["listings"][existing_index]
-                record["first_seen_at"] = old.get("first_seen_at", now_iso)
-                state["listings"][existing_index] = record
-
+            state["listings"].append(record)
+            accepted_now.append(record)
             state["seen"][key] = {
                 "status": "accepted",
                 "seen_at": now_iso,
                 "average_minutes": overall_avg,
             }
 
-    # Dopuni slike za ranije sačuvane 4zida oglase koji su nastali pre
-    # uvođenja prikaza fotografija. Ograničenje čuva sajt od previše zahteva.
-    backfilled = 0
-    for record in state["listings"]:
-        if backfilled >= 12:
+    # ------------------------------------------------------------------
+    # 3. Postojećim starim oglasima dopuni CELOKUPNU galeriju.
+    #    Po 6 po run-u, dok svi ne dobiju images polje.
+    # ------------------------------------------------------------------
+    gallery_backfilled = 0
+    for rec in state["listings"]:
+        if gallery_backfilled >= 6:
             break
-        if record.get("source") != "4zida" or record.get("image_url"):
+        if rec.get("source") != "4zida":
             continue
-        url = record.get("url")
-        if not url:
+        if "images" in rec and isinstance(rec.get("images"), list):
             continue
+
         try:
-            image_url = scraper.get_primary_image_url(url)
-            if image_url:
-                record["image_url"] = image_url
-            else:
-                # Prazan string znači da je pokušano; budući parser i dalje
-                # može kasnije da se promeni ako bude potrebno.
-                record["image_url"] = ""
-            backfilled += 1
+            images = scraper.refresh_gallery(rec["url"])
+            rec["images"] = images
+            rec["image_url"] = images[0] if images else rec.get("image_url", "")
+            gallery_backfilled += 1
         except Exception as exc:
-            print(f"[WARN] Slika nije dopunjena za {url}: {exc}")
+            print(f"[WARN] Galerija nije dopunjena: {exc}")
 
     state["listings"].sort(
         key=lambda x: (x.get("average_minutes", 999), x.get("price_eur", 9999))
@@ -277,9 +298,8 @@ def main() -> None:
                 print(f"[WARN] Telegram notifikacija nije poslata: {exc}")
 
     print(
-        f"Gotovo. Kandidati={len(candidates)}, novi={len(unseen)}, "
-        f"za rute={len(parsed)}, prihvaćeni sada={len(accepted_now)}, "
-        f"slike dopunjene={backfilled}, ukupno prihvaćeni={len(state['listings'])}"
+        f"Gotovo. Novi kandidati={len(unseen)}, prihvaćeni={len(accepted_now)}, "
+        f"galerije dopunjene={gallery_backfilled}, aktivnih na sajtu={len(state['listings'])}"
     )
 
 

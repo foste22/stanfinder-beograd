@@ -1,459 +1,86 @@
 <!doctype html>
 <html lang="sr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>StanFinder Beograd</title>
-  <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <style>
-    :root {
-      color-scheme: light dark;
-      --bg:#f5f6f7; --card:#fff; --text:#16181b; --muted:#69727d;
-      --border:#dfe3e7; --good:#1b8f4b; --ok:#c99500; --warn:#db6b12;
-      --accent:#2563eb; --danger:#b42318; --saved:#b7791f;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg:#101214; --card:#171a1d; --text:#f0f2f4; --muted:#a5adb5;
-        --border:#30363d; --danger:#ff8b82; --saved:#ffd166;
-      }
-    }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--text); }
-    header { padding:18px 20px 8px; max-width:1400px; margin:auto; }
-    h1 { margin:0 0 6px; font-size:clamp(1.5rem,3vw,2.2rem); }
-    .sub,.muted { color:var(--muted); }
-    .stats { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-    .chip { background:var(--card); border:1px solid var(--border); border-radius:999px; padding:8px 11px; font-size:14px; }
-    main { max-width:1400px; margin:auto; padding:12px 20px 30px; }
-    .filters { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:16px; }
-    .filters-title { font-weight:800; margin-bottom:12px; }
-    .filter-grid { display:grid; grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) auto; gap:16px; align-items:end; }
-    .filter-group label { display:flex; justify-content:space-between; gap:10px; font-size:14px; font-weight:650; margin-bottom:7px; }
-    .filter-value { font-weight:800; color:var(--accent); }
-    input[type="range"] { width:100%; accent-color:var(--accent); }
-    .preset-row,.tabs,.actions { display:flex; gap:8px; flex-wrap:wrap; }
-    .preset-row { margin-top:12px; }
-    button { font:inherit; border:1px solid var(--border); background:var(--card); color:var(--text); border-radius:9px; padding:9px 12px; cursor:pointer; }
-    button:hover { border-color:var(--accent); }
-    button.active { border-color:var(--accent); background:color-mix(in srgb,var(--card) 88%,var(--accent)); font-weight:750; }
-    .tabs { margin-bottom:12px; }
-    .tab-count { color:var(--muted); font-size:12px; margin-left:4px; }
-    .layout { display:grid; grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr); gap:16px; align-items:start; }
-    #map { height:680px; border:1px solid var(--border); border-radius:14px; overflow:hidden; }
-    .panel { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
-    .toolbar { padding:12px; display:flex; gap:8px; flex-wrap:wrap; border-bottom:1px solid var(--border); }
-    input[type="search"],select { font:inherit; padding:9px 10px; border-radius:9px; border:1px solid var(--border); background:var(--card); color:var(--text); min-width:0; }
-    input[type="search"] { flex:1 1 180px; } select { flex:0 1 180px; }
-    .list { max-height:620px; overflow:auto; }
-    .item { padding:12px; border-bottom:1px solid var(--border); }
-    .item:last-child { border-bottom:0; }
-    .card-grid { display:grid; grid-template-columns:150px minmax(0,1fr); gap:12px; }
-    .photo-wrap { width:150px; height:112px; background:var(--bg); border-radius:10px; overflow:hidden; border:1px solid var(--border); cursor:pointer; }
-    .photo { width:100%; height:100%; object-fit:cover; display:block; }
-    .photo-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; text-align:center; padding:10px; }
-    .row { display:flex; align-items:baseline; gap:8px; justify-content:space-between; }
-    .price { font-weight:800; font-size:1.1rem; white-space:nowrap; }
-    .addr { font-weight:700; }
-    .meta { color:var(--muted); font-size:13px; margin-top:5px; line-height:1.45; }
-    .time { font-weight:750; color:var(--text); }
-    .badge { display:inline-block; padding:2px 7px; border-radius:999px; font-size:12px; border:1px solid var(--border); margin-left:6px; }
-    .actions { margin-top:9px; }
-    .action-btn { padding:7px 9px; font-size:13px; }
-    .save-btn.is-saved { border-color:var(--saved); color:var(--saved); font-weight:800; }
-    .reject-btn { color:var(--danger); }
-    .restore-btn { border-color:var(--accent); color:var(--accent); font-weight:750; }
-    .open { display:inline-flex; align-items:center; padding:7px 0; color:var(--accent); font-weight:700; text-decoration:none; font-size:13px; }
-    .open:hover { text-decoration:underline; }
-    .empty { padding:34px 18px; text-align:center; color:var(--muted); }
-    .legend { padding-top:8px; font-size:13px; color:var(--muted); }
-    .dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin:0 4px 0 10px; }
-    .dot:first-child { margin-left:0; }
-    .toast { position:sticky; bottom:12px; margin:0 12px 12px; background:var(--text); color:var(--card); border-radius:10px; padding:10px 12px; display:none; align-items:center; justify-content:space-between; gap:12px; z-index:1000; }
-    .toast.show { display:flex; }
-    .toast button { background:transparent; color:inherit; border-color:currentColor; padding:6px 9px; }
-    .storage-note { font-size:12px; color:var(--muted); margin-top:9px; }
-    .popup-img { width:180px; height:120px; object-fit:cover; border-radius:7px; margin:7px 0; display:block; }
-    @media (max-width:900px) {
-      .filter-grid,.layout { grid-template-columns:1fr; }
-      #map { height:460px; }
-      .list { max-height:none; }
-    }
-    @media (max-width:520px) {
-      .card-grid { grid-template-columns:1fr; }
-      .photo-wrap { width:100%; height:190px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>StanFinder Beograd</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{color-scheme:light dark;--bg:#f5f6f7;--card:#fff;--text:#16181b;--muted:#69727d;--border:#dfe3e7;--accent:#2563eb;--danger:#b42318;--saved:#b7791f}
+@media(prefers-color-scheme:dark){:root{--bg:#101214;--card:#171a1d;--text:#f0f2f4;--muted:#a5adb5;--border:#30363d;--danger:#ff8b82;--saved:#ffd166}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+header,main{max-width:1400px;margin:auto;padding-left:20px;padding-right:20px}header{padding-top:18px;padding-bottom:8px}main{padding-top:12px;padding-bottom:30px}
+h1{margin:0 0 6px;font-size:clamp(1.5rem,3vw,2.2rem)}.sub,.muted{color:var(--muted)}
+.stats,.tabs,.actions,.preset-row{display:flex;gap:8px;flex-wrap:wrap}.stats{margin-top:14px}.chip{background:var(--card);border:1px solid var(--border);border-radius:999px;padding:8px 11px;font-size:14px}
+.filters,.panel{background:var(--card);border:1px solid var(--border);border-radius:14px}.filters{padding:14px;margin-bottom:14px}.filter-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:16px;align-items:end}
+.filter-group label{display:flex;justify-content:space-between;font-size:14px;font-weight:650;margin-bottom:7px}.filter-value{font-weight:800;color:var(--accent)}input[type=range]{width:100%;accent-color:var(--accent)}
+button{font:inherit;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:9px;padding:9px 12px;cursor:pointer}button.active{border-color:var(--accent);font-weight:800}.preset-row{margin-top:12px}
+.tabs{margin-bottom:12px}.layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(400px,.95fr);gap:16px;align-items:start}#map{height:680px;border:1px solid var(--border);border-radius:14px}
+.toolbar{padding:12px;display:flex;gap:8px;border-bottom:1px solid var(--border)}input[type=search],select{font:inherit;padding:9px 10px;border:1px solid var(--border);border-radius:9px;background:var(--card);color:var(--text)}input[type=search]{flex:1}.list{max-height:620px;overflow:auto}
+.item{padding:12px;border-bottom:1px solid var(--border)}.card-grid{display:grid;grid-template-columns:145px minmax(0,1fr);gap:12px}.thumb{width:145px;height:108px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:var(--bg)}
+.row{display:flex;justify-content:space-between;gap:8px}.addr{font-weight:750}.price{font-weight:850;white-space:nowrap}.meta{font-size:13px;color:var(--muted);line-height:1.45;margin-top:5px}.time{color:var(--text);font-weight:750}
+.action-btn{font-size:13px;padding:7px 9px}.save-btn.is-saved{color:var(--saved);border-color:var(--saved)}.reject-btn{color:var(--danger)}.restore-btn{color:var(--accent);border-color:var(--accent)}
+.open{color:var(--accent);font-weight:700;text-decoration:none;font-size:13px;display:inline-block;margin-top:7px}.empty{padding:30px;text-align:center;color:var(--muted)}
+.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:2000}.drawer-backdrop.show{display:block}.drawer{position:absolute;right:0;top:0;bottom:0;width:min(760px,92vw);background:var(--card);overflow:auto;padding:18px}
+.drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.close{font-size:20px}.gallery-main{position:relative;margin-top:14px;background:#000;border-radius:12px;overflow:hidden;min-height:360px;display:flex;align-items:center;justify-content:center}.gallery-main img{width:100%;max-height:560px;object-fit:contain;display:block}
+.navbtn{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.62);color:white;border-color:rgba(255,255,255,.5);font-size:24px}.prev{left:10px}.next{right:10px}.counter{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.65);color:white;border-radius:999px;padding:5px 9px;font-size:13px}
+.thumbs{display:flex;gap:7px;overflow:auto;padding:10px 0}.thumb-small{width:86px;height:64px;object-fit:cover;border-radius:7px;border:2px solid transparent;cursor:pointer;flex:none}.thumb-small.selected{border-color:var(--accent)}
+.detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.detail-stat{border:1px solid var(--border);border-radius:10px;padding:10px}.detail-stat small{display:block;color:var(--muted)}.detail-stat strong{font-size:1.05rem}
+.badge{font-size:12px;border:1px solid var(--border);border-radius:999px;padding:2px 7px;margin-left:5px}.toast{display:none;position:sticky;bottom:10px;background:var(--text);color:var(--card);padding:10px;border-radius:10px;margin:10px}.toast.show{display:flex;justify-content:space-between;gap:10px}
+@media(max-width:900px){.filter-grid,.layout{grid-template-columns:1fr}#map{height:450px}.list{max-height:none}}@media(max-width:520px){.card-grid{grid-template-columns:1fr}.thumb{width:100%;height:200px}.detail-stats{grid-template-columns:1fr}.drawer{width:100%}.gallery-main{min-height:250px}}
+</style>
 </head>
 <body>
-<header>
-  <h1>StanFinder Beograd</h1>
-  <div class="sub">Automatski pronađeni stanovi do 400 € sa procenom javnog prevoza do obe lokacije.</div>
-  <div class="stats">
-    <span class="chip">Ukupno: <strong id="totalCount">0</strong></span>
-    <span class="chip">Trenutno prikazano: <strong id="shownCount">0</strong></span>
-    <span class="chip">Osveženo: <strong id="updated">—</strong></span>
-  </div>
-</header>
-
+<header><h1>StanFinder Beograd</h1><div class="sub">Stanovi do 400 € · javni prevoz do obe lokacije · galerije iz originalnih oglasa</div><div class="stats"><span class="chip">Ukupno: <strong id="total">0</strong></span><span class="chip">Prikazano: <strong id="shown">0</strong></span><span class="chip">Osveženo: <strong id="updated">—</strong></span></div></header>
 <main>
-  <section class="filters">
-    <div class="filters-title">Filteri prikaza</div>
-    <div class="filter-grid">
-      <div class="filter-group">
-        <label for="priceFilter"><span>Maksimalna cena</span><span class="filter-value" id="priceValue">400 €</span></label>
-        <input id="priceFilter" type="range" min="200" max="400" step="10" value="400">
-      </div>
-      <div class="filter-group">
-        <label for="timeFilter"><span>Maksimalno prosečno vreme</span><span class="filter-value" id="timeValue">60 min</span></label>
-        <input id="timeFilter" type="range" min="20" max="60" step="1" value="60">
-      </div>
-      <button id="resetFilters" type="button">Resetuj filtere</button>
-    </div>
-    <div class="preset-row">
-      <button type="button" data-time="35">≤ 35 min</button>
-      <button type="button" data-time="40">≤ 40 min</button>
-      <button type="button" data-time="45">≤ 45 min</button>
-      <button type="button" data-time="50">≤ 50 min</button>
-    </div>
-  </section>
-
-  <nav class="tabs" aria-label="Status oglasa">
-    <button type="button" class="active" data-tab="active">Aktivni <span class="tab-count" id="activeCount">0</span></button>
-    <button type="button" data-tab="saved">♥ Sačuvani <span class="tab-count" id="savedCount">0</span></button>
-    <button type="button" data-tab="rejected">Odbačeni <span class="tab-count" id="rejectedCount">0</span></button>
-  </nav>
-
-  <div class="layout">
-    <div>
-      <div id="map" aria-label="Mapa stanova"></div>
-      <div class="legend">
-        <span class="dot" style="background:#1b8f4b"></span> ≤35 min
-        <span class="dot" style="background:#c99500"></span> 35–45 min
-        <span class="dot" style="background:#db6b12"></span> 45–60 min
-        · plavi markeri = fakulteti
-      </div>
-      <div class="storage-note">Sačuvani/odbačeni status se trenutno pamti u ovom internet pregledaču na ovom uređaju. Ne briše se kada StanFinder osveži oglase.</div>
-    </div>
-
-    <section class="panel">
-      <div class="toolbar">
-        <input id="search" type="search" placeholder="Pretraži ulicu / kraj…">
-        <select id="sort">
-          <option value="time">Najbrža ruta</option>
-          <option value="price">Najniža cena</option>
-          <option value="new">Najnovije pronađen</option>
-        </select>
-      </div>
-      <div id="list" class="list"></div>
-      <div id="toast" class="toast" role="status" aria-live="polite">
-        <span id="toastText"></span>
-        <button id="undoBtn" type="button">Poništi</button>
-      </div>
-    </section>
-  </div>
+<section class="filters">
+<div class="filter-grid">
+<div class="filter-group"><label>Maksimalna cena <span class="filter-value" id="pv">400 €</span></label><input id="price" type="range" min="200" max="400" step="10" value="400"></div>
+<div class="filter-group"><label>Maks. prosečno vreme <span class="filter-value" id="tv">60 min</span></label><input id="time" type="range" min="20" max="60" step="1" value="60"></div>
+<button id="reset">Resetuj</button>
+</div><div class="preset-row"><button data-t="35">≤35 min</button><button data-t="40">≤40 min</button><button data-t="45">≤45 min</button><button data-t="50">≤50 min</button></div>
+</section>
+<nav class="tabs"><button class="active" data-tab="active">Aktivni <span id="ac"></span></button><button data-tab="saved">♥ Sačuvani <span id="sc"></span></button><button data-tab="rejected">Odbačeni <span id="rc"></span></button></nav>
+<div class="layout"><div><div id="map"></div><p class="muted" style="font-size:12px">Klik na fotografiju stana otvara celu galeriju. Sačuvani/odbačeni status se pamti u ovom browseru.</p></div>
+<section class="panel"><div class="toolbar"><input id="search" type="search" placeholder="Ulica / kraj…"><select id="sort"><option value="time">Najbrža ruta</option><option value="price">Najniža cena</option><option value="new">Najnoviji</option></select></div><div id="list" class="list"></div><div id="toast" class="toast"><span id="toastText"></span><button id="undo">Poništi</button></div></section></div>
 </main>
+
+<div id="backdrop" class="drawer-backdrop" role="dialog" aria-modal="true" aria-label="Detalji stana">
+<aside class="drawer">
+<div class="drawer-head"><div><div id="daddr" class="addr"></div><div id="dprice" class="price"></div></div><button id="close" class="close">✕</button></div>
+<div id="galleryMain" class="gallery-main"><div class="empty">Nema fotografija</div></div>
+<div id="thumbs" class="thumbs"></div>
+<div class="detail-stats"><div class="detail-stat"><small>Prosek</small><strong id="davg"></strong></div><div class="detail-stat"><small>Fakultet 1</small><strong id="df1"></strong></div><div class="detail-stat"><small>Fakultet 2</small><strong id="df2"></strong></div></div>
+<div id="dmeta" class="meta"></div><div id="dactions" class="actions" style="margin-top:12px"></div><a id="dopen" class="open" target="_blank" rel="noopener">Otvori originalni oglas ↗</a>
+</aside></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-  const STORAGE_KEY = "stanfinder-beograd-status-v1";
-  const map = L.map("map").setView([44.8176, 20.4633], 12);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom:19, attribution:'&copy; OpenStreetMap contributors'
-  }).addTo(map);
-
-  let allListings = [];
-  let currentTab = "active";
-  let statusMap = loadStatuses();
-  let lastAction = null;
-  let toastTimer = null;
-  const markerById = new Map();
-  const listingMarkers = [];
-
-  function loadStatuses() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const x = raw ? JSON.parse(raw) : {};
-      return x && typeof x === "object" ? x : {};
-    } catch { return {}; }
-  }
-
-  function persistStatuses() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(statusMap)); }
-    catch (e) { console.warn("Status nije sačuvan:", e); }
-  }
-
-  function statusOf(id) { return statusMap[id] || "neutral"; }
-
-  function setStatus(id, next, message) {
-    const previous = statusOf(id);
-    if (next === "neutral") delete statusMap[id];
-    else statusMap[id] = next;
-    persistStatuses();
-
-    lastAction = {id, previous};
-    showToast(message);
-    renderAll();
-  }
-
-  function showToast(message) {
-    document.getElementById("toastText").textContent = message;
-    document.getElementById("toast").classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      document.getElementById("toast").classList.remove("show");
-      lastAction = null;
-    }, 8000);
-  }
-
-  function undoLast() {
-    if (!lastAction) return;
-    const {id, previous} = lastAction;
-    if (previous === "neutral") delete statusMap[id];
-    else statusMap[id] = previous;
-    persistStatuses();
-    lastAction = null;
-    document.getElementById("toast").classList.remove("show");
-    renderAll();
-  }
-
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[c]));
-  }
-
-  function colorFor(minutes) {
-    if (minutes <= 35) return "#1b8f4b";
-    if (minutes <= 45) return "#c99500";
-    return "#db6b12";
-  }
-
-  function fmtDate(s) {
-    if (!s) return "—";
-    const d = new Date(s);
-    return Number.isNaN(d.getTime()) ? "—" : d.toLocaleString("sr-RS");
-  }
-
-  function filteredListings() {
-    const maxPrice = Number(document.getElementById("priceFilter").value);
-    const maxTime = Number(document.getElementById("timeFilter").value);
-    const q = document.getElementById("search").value.trim().toLowerCase();
-
-    return allListings.filter(x => {
-      const status = statusOf(x.id);
-      const tabMatch =
-        currentTab === "active" ? status !== "rejected" :
-        currentTab === "saved" ? status === "saved" :
-        status === "rejected";
-
-      return tabMatch &&
-        Number(x.price_eur) <= maxPrice &&
-        Number(x.average_minutes) <= maxTime &&
-        (!q || `${x.address} ${x.title}`.toLowerCase().includes(q));
-    });
-  }
-
-  function updateCounts() {
-    const saved = allListings.filter(x => statusOf(x.id) === "saved").length;
-    const rejected = allListings.filter(x => statusOf(x.id) === "rejected").length;
-    document.getElementById("savedCount").textContent = saved;
-    document.getElementById("rejectedCount").textContent = rejected;
-    document.getElementById("activeCount").textContent = allListings.length - rejected;
-  }
-
-  function updateMapVisibility(rows) {
-    const visible = new Set(rows.map(x => x.id));
-    listingMarkers.forEach(({id, marker}) => {
-      if (visible.has(id)) {
-        if (!map.hasLayer(marker)) marker.addTo(map);
-      } else if (map.hasLayer(marker)) {
-        map.removeLayer(marker);
-      }
-    });
-  }
-
-  function imageHtml(x) {
-    if (!x.image_url) return '<div class="photo-placeholder">Fotografija trenutno nije dostupna</div>';
-    return `<img class="photo" src="${esc(x.image_url)}" alt="Fotografija stana: ${esc(x.address)}" referrerpolicy="no-referrer" loading="lazy" onerror="this.parentElement.innerHTML='<div class=&quot;photo-placeholder&quot;>Fotografija nije učitana</div>'">`;
-  }
-
-  function renderList() {
-    document.getElementById("priceValue").textContent = `${document.getElementById("priceFilter").value} €`;
-    document.getElementById("timeValue").textContent = `${document.getElementById("timeFilter").value} min`;
-
-    const mode = document.getElementById("sort").value;
-    let rows = filteredListings();
-
-    rows = [...rows].sort((a,b) => {
-      if (mode === "price") return a.price_eur - b.price_eur || a.average_minutes - b.average_minutes;
-      if (mode === "new") return new Date(b.first_seen_at) - new Date(a.first_seen_at);
-      return a.average_minutes - b.average_minutes || a.price_eur - b.price_eur;
-    });
-
-    document.getElementById("shownCount").textContent = rows.length;
-    updateMapVisibility(rows);
-
-    const list = document.getElementById("list");
-    if (!rows.length) {
-      const text = currentTab === "saved" ? "Još nema sačuvanih stanova." :
-                   currentTab === "rejected" ? "Nema odbačenih stanova." :
-                   "Nema stanova koji odgovaraju trenutno izabranim filterima.";
-      list.innerHTML = `<div class="empty">${text}</div>`;
-      return;
-    }
-
-    list.innerHTML = rows.map(x => {
-      const st = statusOf(x.id);
-      const saved = st === "saved";
-      const rejected = st === "rejected";
-
-      return `
-        <article class="item" data-id="${esc(x.id)}">
-          <div class="card-grid">
-            <div class="photo-wrap" data-focus-marker="${esc(x.id)}" title="Prikaži na mapi">
-              ${imageHtml(x)}
-            </div>
-            <div>
-              <div class="row">
-                <div class="addr">${esc(x.address)}${x.approximate_location ? '<span class="badge">≈ lokacija</span>' : ''}</div>
-                <div class="price">${esc(x.price_eur)} €</div>
-              </div>
-              <div class="meta">
-                ${x.area_m2 ? `${esc(x.area_m2)} m² · ` : ""}
-                ${x.rooms ? `${esc(x.rooms)} · ` : ""}
-                <span class="time">${esc(x.average_minutes)} min prosek</span><br>
-                Fakultet 1: ${esc(x.destination_averages?.[0] ?? "?")} min ·
-                Fakultet 2: ${esc(x.destination_averages?.[1] ?? "?")} min<br>
-                najgori uzorak: ${esc(x.worst_sample_minutes)} min
-              </div>
-              <div class="actions">
-                <button type="button" class="action-btn save-btn ${saved ? "is-saved" : ""}" data-save="${esc(x.id)}">
-                  ${saved ? "♥ Sačuvano" : "♡ Sačuvaj"}
-                </button>
-                ${rejected
-                  ? `<button type="button" class="action-btn restore-btn" data-restore="${esc(x.id)}">↩ Vrati</button>`
-                  : `<button type="button" class="action-btn reject-btn" data-reject="${esc(x.id)}">✕ Odbaci</button>`
-                }
-              </div>
-              <a class="open" href="${esc(x.url)}" target="_blank" rel="noopener">Otvori originalni oglas ↗</a>
-            </div>
-          </div>
-        </article>`;
-    }).join("");
-
-    list.querySelectorAll("[data-focus-marker]").forEach(el => {
-      el.addEventListener("click", () => {
-        const marker = markerById.get(el.dataset.focusMarker);
-        if (marker) { map.setView(marker.getLatLng(), 16); marker.openPopup(); }
-      });
-    });
-
-    list.querySelectorAll("[data-save]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.save;
-        const next = statusOf(id) === "saved" ? "neutral" : "saved";
-        setStatus(id, next, next === "saved" ? "Stan je dodat u Sačuvane." : "Stan je uklonjen iz Sačuvanih.");
-      });
-    });
-
-    list.querySelectorAll("[data-reject]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        setStatus(btn.dataset.reject, "rejected", "Stan je premešten u Odbačene.");
-      });
-    });
-
-    list.querySelectorAll("[data-restore]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        setStatus(btn.dataset.restore, "neutral", "Stan je vraćen među Aktivne.");
-      });
-    });
-  }
-
-  function renderAll() {
-    updateCounts();
-    renderList();
-  }
-
-  async function init() {
-    const r = await fetch(`data/listings.json?t=${Date.now()}`, {cache:"no-store"});
-    if (!r.ok) throw new Error("Ne mogu da učitam data/listings.json");
-    const data = await r.json();
-
-    allListings = data.listings || [];
-    document.getElementById("totalCount").textContent = allListings.length;
-    document.getElementById("updated").textContent = fmtDate(data.meta.updated_at);
-
-    const bounds = [];
-    (data.destinations || []).forEach(d => {
-      const marker = L.circleMarker([d.lat,d.lon], {
-        radius:9, color:"#2563eb", weight:3, fillColor:"#2563eb", fillOpacity:.55
-      }).addTo(map);
-      marker.bindPopup(`<strong>${esc(d.name)}</strong>`);
-      bounds.push([d.lat,d.lon]);
-    });
-
-    allListings.forEach(x => {
-      const c = colorFor(x.average_minutes);
-      const marker = L.circleMarker([x.lat,x.lon], {
-        radius:8, color:c, weight:2, fillColor:c, fillOpacity:.72
-      }).addTo(map);
-
-      const popupImage = x.image_url
-        ? `<img class="popup-img" src="${esc(x.image_url)}" alt="" referrerpolicy="no-referrer">`
-        : "";
-
-      marker.bindPopup(`
-        <strong>${esc(x.address)}</strong><br>
-        ${popupImage}
-        ${esc(x.price_eur)} € · ${esc(x.average_minutes)} min prosek<br>
-        F1 ${esc(x.destination_averages?.[0] ?? "?")} min ·
-        F2 ${esc(x.destination_averages?.[1] ?? "?")} min<br>
-        ${x.approximate_location ? "<em>Približna lokacija oglasa</em><br>" : ""}
-        <a href="${esc(x.url)}" target="_blank" rel="noopener">Otvori oglas ↗</a>
-      `);
-
-      markerById.set(x.id, marker);
-      listingMarkers.push({id:x.id, marker});
-      bounds.push([x.lat,x.lon]);
-    });
-
-    if (bounds.length >= 2) map.fitBounds(bounds, {padding:[30,30], maxZoom:14});
-    renderAll();
-  }
-
-  ["priceFilter","timeFilter"].forEach(id => document.getElementById(id).addEventListener("input", renderAll));
-  document.getElementById("search").addEventListener("input", renderAll);
-  document.getElementById("sort").addEventListener("change", renderAll);
-  document.getElementById("undoBtn").addEventListener("click", undoLast);
-
-  document.getElementById("resetFilters").addEventListener("click", () => {
-    document.getElementById("priceFilter").value = 400;
-    document.getElementById("timeFilter").value = 60;
-    document.getElementById("search").value = "";
-    renderAll();
-  });
-
-  document.querySelectorAll("[data-time]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.getElementById("timeFilter").value = btn.dataset.time;
-      renderAll();
-    });
-  });
-
-  document.querySelectorAll("[data-tab]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      currentTab = btn.dataset.tab;
-      document.querySelectorAll("[data-tab]").forEach(x => x.classList.toggle("active", x === btn));
-      renderAll();
-    });
-  });
-
-  init().catch(err => {
-    console.error(err);
-    document.getElementById("list").innerHTML = `<div class="empty">Greška: ${esc(err.message)}</div>`;
-  });
+const KEY="stanfinder-beograd-status-v1";let data=[],tab="active",statuses=load(),lastAction=null,current=null,gIndex=0;
+const map=L.map("map").setView([44.8176,20.4633],12);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}).addTo(map);
+const markers=new Map();
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch{return{}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(statuses))}
+function st(id){return statuses[id]||"neutral"}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function imgList(x){if(Array.isArray(x.images)&&x.images.length)return x.images;if(x.image_url)return[x.image_url];return[]}
+function setStatus(id,next,msg){let prev=st(id);if(next==="neutral")delete statuses[id];else statuses[id]=next;save();lastAction={id,prev};toast(msg);render();if(current&&current.id===id)openDetails(current)}
+function toast(msg){document.getElementById("toastText").textContent=msg;document.getElementById("toast").classList.add("show")}
+function filtered(){let p=+price.value,t=+time.value,q=search.value.toLowerCase();return data.filter(x=>{let s=st(x.id),tm=tab==="active"?s!=="rejected":tab==="saved"?s==="saved":s==="rejected";return tm&&x.price_eur<=p&&x.average_minutes<=t&&(!q||(x.address+" "+x.title).toLowerCase().includes(q))})}
+function render(){
+pv.textContent=price.value+" €";tv.textContent=time.value+" min";ac.textContent=data.filter(x=>st(x.id)!=="rejected").length;sc.textContent=data.filter(x=>st(x.id)==="saved").length;rc.textContent=data.filter(x=>st(x.id)==="rejected").length;
+let rows=filtered();if(sort.value==="price")rows.sort((a,b)=>a.price_eur-b.price_eur||a.average_minutes-b.average_minutes);else if(sort.value==="new")rows.sort((a,b)=>new Date(b.first_seen_at)-new Date(a.first_seen_at));else rows.sort((a,b)=>a.average_minutes-b.average_minutes||a.price_eur-b.price_eur);shown.textContent=rows.length;
+let vis=new Set(rows.map(x=>x.id));markers.forEach((m,id)=>{if(vis.has(id)){if(!map.hasLayer(m))m.addTo(map)}else if(map.hasLayer(m))map.removeLayer(m)});
+list.innerHTML=rows.length?rows.map(x=>{let ims=imgList(x),s=st(x.id);return`<article class="item"><div class="card-grid">${ims[0]?`<img class="thumb" data-detail="${esc(x.id)}" src="${esc(ims[0])}" referrerpolicy="no-referrer" loading="lazy">`:`<button class="thumb" data-detail="${esc(x.id)}">Otvori detalje</button>`}<div><div class="row"><div class="addr">${esc(x.address)}${x.approximate_location?'<span class="badge">≈ lokacija</span>':""}</div><div class="price">${x.price_eur} €</div></div><div class="meta">${x.area_m2?x.area_m2+" m² · ":""}${x.rooms?esc(x.rooms)+" · ":""}<span class="time">${x.average_minutes} min prosek</span><br>F1 ${x.destination_averages?.[0]??"?"} min · F2 ${x.destination_averages?.[1]??"?"} min · najgori ${x.worst_sample_minutes} min<br>${ims.length?`📷 ${ims.length} fotografija`:""}</div><div class="actions"><button class="action-btn save-btn ${s==="saved"?"is-saved":""}" data-save="${esc(x.id)}">${s==="saved"?"♥ Sačuvano":"♡ Sačuvaj"}</button>${s==="rejected"?`<button class="action-btn restore-btn" data-restore="${esc(x.id)}">↩ Vrati</button>`:`<button class="action-btn reject-btn" data-reject="${esc(x.id)}">✕ Odbaci</button>`}<button class="action-btn" data-detail="${esc(x.id)}">Galerija / detalji</button></div><a class="open" href="${esc(x.url)}" target="_blank" rel="noopener">Originalni oglas ↗</a></div></div></article>`}).join(""):'<div class="empty">Nema stanova za ovaj prikaz.</div>';
+document.querySelectorAll("[data-detail]").forEach(e=>e.onclick=()=>openDetails(data.find(x=>x.id===e.dataset.detail)));document.querySelectorAll("[data-save]").forEach(e=>e.onclick=()=>setStatus(e.dataset.save,st(e.dataset.save)==="saved"?"neutral":"saved","Status promenjen."));document.querySelectorAll("[data-reject]").forEach(e=>e.onclick=()=>setStatus(e.dataset.reject,"rejected","Stan je premešten u Odbačene."));document.querySelectorAll("[data-restore]").forEach(e=>e.onclick=()=>setStatus(e.dataset.restore,"neutral","Stan je vraćen."));
+}
+function openDetails(x){if(!x)return;current=x;gIndex=0;daddr.textContent=x.address;dprice.textContent=x.price_eur+" €";davg.textContent=x.average_minutes+" min";df1.textContent=(x.destination_averages?.[0]??"?")+" min";df2.textContent=(x.destination_averages?.[1]??"?")+" min";dmeta.innerHTML=`${x.area_m2?esc(x.area_m2)+" m² · ":""}${x.rooms?esc(x.rooms)+" · ":""}najgori uzorak ${esc(x.worst_sample_minutes)} min`;dopen.href=x.url;renderGallery();renderDActions();backdrop.classList.add("show");document.body.style.overflow="hidden"}
+function renderGallery(){let ims=imgList(current);if(!ims.length){galleryMain.innerHTML='<div class="empty" style="color:white">Galerija nije dostupna</div>';thumbs.innerHTML="";return}gIndex=Math.max(0,Math.min(gIndex,ims.length-1));galleryMain.innerHTML=`<img src="${esc(ims[gIndex])}" referrerpolicy="no-referrer" alt="Fotografija ${gIndex+1}"><button class="navbtn prev" id="gp">‹</button><button class="navbtn next" id="gn">›</button><span class="counter">${gIndex+1} / ${ims.length}</span>`;document.getElementById("gp").onclick=()=>{gIndex=(gIndex-1+ims.length)%ims.length;renderGallery()};document.getElementById("gn").onclick=()=>{gIndex=(gIndex+1)%ims.length;renderGallery()};thumbs.innerHTML=ims.map((u,i)=>`<img class="thumb-small ${i===gIndex?"selected":""}" data-i="${i}" src="${esc(u)}" referrerpolicy="no-referrer" loading="lazy">`).join("");thumbs.querySelectorAll("[data-i]").forEach(e=>e.onclick=()=>{gIndex=+e.dataset.i;renderGallery()})}
+function renderDActions(){let s=st(current.id);dactions.innerHTML=`<button class="action-btn save-btn ${s==="saved"?"is-saved":""}" id="ds">${s==="saved"?"♥ Sačuvano":"♡ Sačuvaj"}</button>${s==="rejected"?'<button class="action-btn restore-btn" id="dr">↩ Vrati</button>':'<button class="action-btn reject-btn" id="dr">✕ Odbaci</button>'}`;ds.onclick=()=>setStatus(current.id,s==="saved"?"neutral":"saved","Status promenjen.");dr.onclick=()=>setStatus(current.id,s==="rejected"?"neutral":"rejected",s==="rejected"?"Stan je vraćen.":"Stan je odbačen.")}
+function closeDrawer(){backdrop.classList.remove("show");document.body.style.overflow="";current=null}
+close.onclick=closeDrawer;backdrop.onclick=e=>{if(e.target===backdrop)closeDrawer()};document.addEventListener("keydown",e=>{if(e.key==="Escape"&&backdrop.classList.contains("show"))closeDrawer();if(!current)return;if(e.key==="ArrowRight"){gIndex++;renderGallery()}if(e.key==="ArrowLeft"){gIndex--;renderGallery()}});
+undo.onclick=()=>{if(!lastAction)return;if(lastAction.prev==="neutral")delete statuses[lastAction.id];else statuses[lastAction.id]=lastAction.prev;save();lastAction=null;toast.classList.remove("show");render()};
+[price,time,search,sort].forEach(e=>e.oninput=render);reset.onclick=()=>{price.value=400;time.value=60;search.value="";render()};document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{time.value=b.dataset.t;render()});document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));render()});
+(async()=>{let r=await fetch("data/listings.json?t="+Date.now(),{cache:"no-store"}),j=await r.json();data=j.listings||[];total.textContent=data.length;updated.textContent=j.meta.updated_at?new Date(j.meta.updated_at).toLocaleString("sr-RS"):"—";(j.destinations||[]).forEach(d=>L.circleMarker([d.lat,d.lon],{radius:9,color:"#2563eb",weight:3,fillColor:"#2563eb",fillOpacity:.55}).addTo(map).bindPopup("<strong>"+esc(d.name)+"</strong>"));data.forEach(x=>{let c=x.average_minutes<=35?"#1b8f4b":x.average_minutes<=45?"#c99500":"#db6b12",m=L.circleMarker([x.lat,x.lon],{radius:8,color:c,weight:2,fillColor:c,fillOpacity:.72}).addTo(map).bindPopup(`<strong>${esc(x.address)}</strong><br>${x.price_eur} € · ${x.average_minutes} min<br><button type="button" data-map-detail="${esc(x.id)}">Galerija / detalji</button><br><a href="${esc(x.url)}" target="_blank">Originalni oglas ↗</a>`);m.on("popupopen",()=>{setTimeout(()=>{let e=document.querySelector(`[data-map-detail="${CSS.escape(x.id)}"]`);if(e)e.onclick=()=>openDetails(x)},0)});markers.set(x.id,m)});render()})().catch(e=>{list.innerHTML='<div class="empty">Greška: '+esc(e.message)+'</div>'});
 </script>
-</body>
-</html>
+</body></html>
