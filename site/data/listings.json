@@ -1,11 +1,11 @@
 {
   "meta": {
-    "updated_at": "2026-09-06T13:37:41.378458+02:00",
+    "updated_at": "2026-09-06T16:26:07.665607+02:00",
     "max_price_eur": 400,
     "max_average_minutes": 60,
     "max_single_trip_minutes": 75,
-    "accepted_count": 67,
-    "new_accepted_this_run": 15,
+    "accepted_count": 83,
+    "new_accepted_this_run": 16,
     "sources": [
       "4zida",
       "nekretnine_rs",
@@ -15,16 +15,16 @@
     "pipeline_stats": {
       "4zida": {
         "candidates": 20,
-        "unseen_selected": 4,
-        "parsed_ok": 4,
+        "unseen_selected": 3,
+        "parsed_ok": 3,
         "no_photos": 1,
         "over_price": 0,
-        "geocoded_or_coords": 2,
+        "geocoded_or_coords": 1,
         "missing_coords": 1,
         "route_insufficient": 0,
         "over_average": 0,
         "over_single": 0,
-        "accepted": 2
+        "accepted": 1
       },
       "nekretnine_rs": {
         "candidates": 0,
@@ -45,31 +45,31 @@
         "parsed_ok": 60,
         "no_photos": 0,
         "over_price": 0,
-        "geocoded_or_coords": 14,
-        "missing_coords": 46,
+        "geocoded_or_coords": 15,
+        "missing_coords": 45,
         "route_insufficient": 0,
         "over_average": 1,
         "over_single": 0,
-        "accepted": 13
+        "accepted": 14
       },
       "oglasi_rs": {
         "candidates": 24,
-        "unseen_selected": 7,
-        "parsed_ok": 7,
+        "unseen_selected": 4,
+        "parsed_ok": 4,
         "no_photos": 2,
-        "over_price": 4,
-        "geocoded_or_coords": 0,
+        "over_price": 0,
+        "geocoded_or_coords": 1,
         "missing_coords": 1,
         "route_insufficient": 0,
         "over_average": 0,
         "over_single": 0,
-        "accepted": 0
+        "accepted": 1
       }
     },
     "total_by_source": {
-      "halo_oglasi": 44,
-      "4zida": 21,
-      "oglasi_rs": 2
+      "halo_oglasi": 58,
+      "4zida": 22,
+      "oglasi_rs": 3
     },
     "routing_method": "Official Belgrade GTFS; schedule-based, no live traffic"
   },
@@ -601,6 +601,63 @@
       "first_seen_at": "2026-09-06T09:05:13.934972+02:00"
     },
     {
+      "id": "halo_oglasi:5425647093642",
+      "source": "halo_oglasi",
+      "source_id": "5425647093642",
+      "title": "Izdajem opremljen stan u centru",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/izdajem-opremljen-stan-u-centru/5425647093642?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260501/m/izdajem-opremljen-stan-u-centru-5425647093642-71815601197.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/260501/m/izdajem-opremljen-stan-u-centru-5425647093642-71815601197.jpg",
+      "price_eur": 380,
+      "address": "Krfska",
+      "neighborhood": "Slavujev venac",
+      "formatted_address": "Krfska",
+      "approximate_location": true,
+      "lat": 44.8034337,
+      "lon": 20.4918539,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 31.1,
+      "destination_averages": [
+        39.9,
+        22.4
+      ],
+      "worst_sample_minutes": 41.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          37.8,
+          39.6,
+          41.6,
+          40.6
+        ],
+        "1": [
+          22.4,
+          21.4,
+          24.4,
+          21.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
       "id": "4zida:6a9d2f15b72399450e053e13",
       "source": "4zida",
       "source_id": "6a9d2f15b72399450e053e13",
@@ -767,6 +824,62 @@
       "first_seen_at": "2026-09-06T09:05:13.934972+02:00"
     },
     {
+      "id": "halo_oglasi:5425646880011",
+      "source": "halo_oglasi",
+      "source_id": "5425646880011",
+      "title": "Crveni krst, manji jednosoban stan",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/crveni-krst-manji-jednosoban-stan/5425646880011?kid=3",
+      "images": [
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+      "price_eur": 300,
+      "address": "Gružanska",
+      "neighborhood": "Crveni krst",
+      "formatted_address": "Gružanska",
+      "approximate_location": true,
+      "lat": 44.7972649,
+      "lon": 20.4861465,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": true,
+      "heating": null,
+      "average_minutes": 32.0,
+      "destination_averages": [
+        42.4,
+        21.6
+      ],
+      "worst_sample_minutes": 46.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          46.6,
+          39.6,
+          42.7,
+          40.6
+        ],
+        "1": [
+          22.4,
+          21.4,
+          21.4,
+          21.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
       "id": "halo_oglasi:5425644722790",
       "source": "halo_oglasi",
       "source_id": "5425644722790",
@@ -879,6 +992,63 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T05:31:42.291522+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425645976393",
+      "source": "halo_oglasi",
+      "source_id": "5425645976393",
+      "title": "Karaburma, Marijane Gregoran, 35m2",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/karaburma-marijane-gregoran-35m2/5425645976393?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/250907/m/karaburma-marijane-gregoran-35m2-5425645976393-71812899977.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/250907/m/karaburma-marijane-gregoran-35m2-5425645976393-71812899977.jpg",
+      "price_eur": 320,
+      "address": "Marijane Gregoran 11/3a",
+      "neighborhood": "Karaburma",
+      "formatted_address": "Marijane Gregoran 11/3a",
+      "approximate_location": true,
+      "lat": 44.8132384,
+      "lon": 20.5067834,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 33.1,
+      "destination_averages": [
+        40.4,
+        25.8
+      ],
+      "worst_sample_minutes": 42.7,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          38.6,
+          39.6,
+          42.7,
+          40.6
+        ],
+        "1": [
+          22.4,
+          26.1,
+          28.1,
+          26.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
     },
     {
       "id": "halo_oglasi:5425647245861",
@@ -1633,6 +1803,63 @@
       "neighborhood": "Blok 45"
     },
     {
+      "id": "halo_oglasi:5425645775498",
+      "source": "halo_oglasi",
+      "source_id": "5425645775498",
+      "title": "Izdaje se opremljena garsonjera na Banovom Brdu",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/izdaje-se-opremljena-garsonjera-na-banovom-br/5425645775498?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/250716/m/izdaje-se-opremeljena-garsonjera-na-banovom-b-5425645775498-71812313760.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/250716/m/izdaje-se-opremeljena-garsonjera-na-banovom-b-5425645775498-71812313760.jpg",
+      "price_eur": 350,
+      "address": "Blagoja Parovića",
+      "neighborhood": "Banovo brdo",
+      "formatted_address": "Blagoja Parovića",
+      "approximate_location": true,
+      "lat": 44.7741338,
+      "lon": 20.4137731,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 40.8,
+      "destination_averages": [
+        49.1,
+        32.4
+      ],
+      "worst_sample_minutes": 54.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          46.6,
+          46.6,
+          54.6,
+          48.7
+        ],
+        "1": [
+          34.2,
+          29.1,
+          33.0,
+          33.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
       "id": "halo_oglasi:5425647605126",
       "source": "halo_oglasi",
       "source_id": "5425647605126",
@@ -2217,6 +2444,176 @@
       "first_seen_at": "2026-09-06T13:37:41.378458+02:00"
     },
     {
+      "id": "halo_oglasi:5425643114086",
+      "source": "halo_oglasi",
+      "source_id": "5425643114086",
+      "title": "Garsonjera",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/garsonjera/5425643114086?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/240304/m/garsonjera-5425643114086-71807442602.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/240304/m/garsonjera-5425643114086-71807442602.jpg",
+      "price_eur": 300,
+      "address": "Mis Irbijeve",
+      "neighborhood": "Konjarnik",
+      "formatted_address": "Mis Irbijeve",
+      "approximate_location": true,
+      "lat": 44.7872648,
+      "lon": 20.502184,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 43.0,
+      "destination_averages": [
+        53.4,
+        32.6
+      ],
+      "worst_sample_minutes": 55.8,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          50.6,
+          54.6,
+          52.6
+        ],
+        "1": [
+          34.4,
+          29.4,
+          33.4,
+          33.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425647596558",
+      "source": "halo_oglasi",
+      "source_id": "5425647596558",
+      "title": "Stan za izdavanje Banjica",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/stan-za-izdavanje-banjica/5425647596558?kid=3",
+      "images": [
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+      "price_eur": 300,
+      "address": "Učiteljice Leontine Kraus",
+      "neighborhood": "Banjica",
+      "formatted_address": "Učiteljice Leontine Kraus",
+      "approximate_location": true,
+      "lat": 44.7578502,
+      "lon": 20.4756006,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 43.1,
+      "destination_averages": [
+        53.4,
+        32.9
+      ],
+      "worst_sample_minutes": 55.8,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          50.6,
+          54.6,
+          52.6
+        ],
+        "1": [
+          34.4,
+          30.4,
+          33.4,
+          33.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425646647943",
+      "source": "halo_oglasi",
+      "source_id": "5425646647943",
+      "title": "Jednosoban stan na dobroj lokaciji",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/jednosoban-stan-na-dobroj-lokaciji/5425646647943?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260119/m/jednosoban-stan-na-dobroj-lokaciji-5425646647943-71814410918.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/260119/m/jednosoban-stan-na-dobroj-lokaciji-5425646647943-71814410918.jpg",
+      "price_eur": 350,
+      "address": "Ace Joksimovića",
+      "neighborhood": "Žarkovo",
+      "formatted_address": "Ace Joksimovića",
+      "approximate_location": true,
+      "lat": 44.7590836,
+      "lon": 20.4153133,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 43.4,
+      "destination_averages": [
+        50.9,
+        35.9
+      ],
+      "worst_sample_minutes": 54.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          46.6,
+          50.6,
+          54.6,
+          51.6
+        ],
+        "1": [
+          34.2,
+          37.0,
+          37.2,
+          35.0
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
       "id": "halo_oglasi:5425646816936",
       "source": "halo_oglasi",
       "source_id": "5425646816936",
@@ -2558,6 +2955,119 @@
       "first_seen_at": "2026-09-06T05:47:09.611721+02:00"
     },
     {
+      "id": "halo_oglasi:5425643566737",
+      "source": "halo_oglasi",
+      "source_id": "5425643566737",
+      "title": "Garsonjera",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/garsonjera/5425643566737?kid=1",
+      "images": [
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+      "price_eur": 300,
+      "address": "Borčanskih žrtava 1914. 72",
+      "neighborhood": "Borča",
+      "formatted_address": "Borčanskih žrtava 1914. 72",
+      "approximate_location": true,
+      "lat": 44.8684277,
+      "lon": 20.4591528,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 45.1,
+      "destination_averages": [
+        40.1,
+        50.2
+      ],
+      "worst_sample_minutes": 54.4,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          35.6,
+          42.6,
+          38.6,
+          43.6
+        ],
+        "1": [
+          46.1,
+          50.1,
+          50.1,
+          54.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425644952669",
+      "source": "halo_oglasi",
+      "source_id": "5425644952669",
+      "title": "Izdajem stan u Krnjači kod Pančevačkog Mosta",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/izdajem-stan-u-krnjaci-kod-pancevackog-mosta/5425644952669?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/241108/m/izdajem-stan-sa-svim-troskovima-pancevackog-m-5425644952669-71809937176.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/241108/m/izdajem-stan-sa-svim-troskovima-pancevackog-m-5425644952669-71809937176.jpg",
+      "price_eur": 300,
+      "address": "Igora Vasiljeva",
+      "neighborhood": "Krnjača",
+      "formatted_address": "Igora Vasiljeva",
+      "approximate_location": true,
+      "lat": 44.8378419,
+      "lon": 20.505897,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": true,
+      "heating": null,
+      "average_minutes": 45.2,
+      "destination_averages": [
+        52.9,
+        37.6
+      ],
+      "worst_sample_minutes": 55.8,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          50.6,
+          53.6,
+          51.6
+        ],
+        "1": [
+          39.4,
+          39.1,
+          38.4,
+          33.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
       "id": "4zida:6a9a7b25e993ef520f07a9a6",
       "source": "4zida",
       "source_id": "6a9a7b25e993ef520f07a9a6",
@@ -2743,6 +3253,66 @@
       "neighborhood": "Mirijevo"
     },
     {
+      "id": "4zida:6a9d75594b7b18bf350cfa2b",
+      "source": "4zida",
+      "source_id": "6a9d75594b7b18bf350cfa2b",
+      "title": "Garsonjera za izdavanje, Matičanska, 400€, 35m²",
+      "url": "https://www.4zida.rs/izdavanje-stanova/mirijevo-zvezdara-opstina-beograd/garsonjera/6a9d75594b7b18bf350cfa2b",
+      "images": [
+        "https://resizer2.4zida.rs/qj89p6WbF47erEpnhWFOckeLcNlsWkCfSRnWZbdOHqs/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzNlMjhjY2Q1NmVfd20.jpeg",
+        "https://resizer2.4zida.rs/XFqtiiUzRRlTZMqZ0HyRtb8d3UaiDtKn7vcvh3GzXBA/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzg5OThhMmMyZTdfd20.jpeg",
+        "https://resizer2.4zida.rs/2EWSbD_eTfJXTYNTQ2ZUvychdYx7Qa59FHUZUvukfRI/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzliYTBhZmVkNzRfd20.jpeg",
+        "https://resizer2.4zida.rs/qUyhLwPKX68euxpgNiQUfvoFChF1deTpJkHLtaO0bzQ/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiL2I2ZmZiZjM3NzBfd20.jpeg",
+        "https://resizer2.4zida.rs/fmY52TUsLNLkoo-w-OPimNHGTnQUYf3p-lavnhEKUms/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzAzNzVmM2UyYWVfd20.jpeg",
+        "https://resizer2.4zida.rs/FfKiBcgbrgs10qgs6hY4qErmi1SZLZYjY2qY3fJlMX0/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiL2ExOWZlZWJiN2Rfd20.jpeg",
+        "https://resizer2.4zida.rs/Ts7zU2YT_drnHDZ2YTOk0CHfDuvl1Jv56Us5qHHSJhc/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzhiOWRhMTU0Y2Vfd20.jpeg",
+        "https://resizer2.4zida.rs/uDx7jj9jB72tJ_bz4ODLmmstI_Pnwn5mpRF2W9XfsgY/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzZlODgyMGM2NjVfd20.jpeg",
+        "https://resizer2.4zida.rs/z7HeMeACToFMwzRDhvKkT62HcbKv0xA8GzycdV25hDQ/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiL2JkNmExYjg0MmZfd20.jpeg",
+        "https://resizer2.4zida.rs/Pfmeox_xe57ia-g3_a9qFk3fnDf6L5vo4R8DPsWCc90/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzc0Zjc0OGQyZGVfd20.jpeg",
+        "https://resizer2.4zida.rs/EDYYsC_u3yf3OpUvZyJVQCPNPMjtSNq8oKlStXGWgAY/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzY5YjQxNGU3ZTFfd20.jpeg"
+      ],
+      "image_url": "https://resizer2.4zida.rs/qj89p6WbF47erEpnhWFOckeLcNlsWkCfSRnWZbdOHqs/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmE5ZDc1NTk0YjdiMThiZjM1MGNmYTJiLzNlMjhjY2Q1NmVfd20.jpeg",
+      "price_eur": 400,
+      "address": "Matičanska",
+      "neighborhood": "Mirijevo",
+      "formatted_address": "Matičanska",
+      "approximate_location": true,
+      "lat": 44.785744464783,
+      "lon": 20.527936233839,
+      "area_m2": 35.0,
+      "rooms": "Garsonjera",
+      "furnished": true,
+      "heating": "Etažno",
+      "average_minutes": 46.1,
+      "destination_averages": [
+        53.4,
+        38.8
+      ],
+      "worst_sample_minutes": 55.8,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          50.6,
+          54.6,
+          52.6
+        ],
+        "1": [
+          39.4,
+          39.1,
+          38.4,
+          38.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
       "id": "4zida:6a9bf9367ca5580518023616",
       "source": "4zida",
       "source_id": "6a9bf9367ca5580518023616",
@@ -2801,6 +3371,63 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T04:48:18.299819+02:00",
       "neighborhood": "Kanarevo Brdo"
+    },
+    {
+      "id": "halo_oglasi:5425647638562",
+      "source": "halo_oglasi",
+      "source_id": "5425647638562",
+      "title": "Odmah useljiv prelep stan - Mirijevo",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/odmah-useljiv-prelep-stan---mirijevo/5425647638562",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260906/m/odmah-useljiv-prelep-stan---mirijevo-5425647638562-71816931768.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/260906/m/odmah-useljiv-prelep-stan---mirijevo-5425647638562-71816931768.jpg",
+      "price_eur": 400,
+      "address": "Dva bela goluba",
+      "neighborhood": "Mirijevo",
+      "formatted_address": "Dva bela goluba",
+      "approximate_location": true,
+      "lat": 44.7903331,
+      "lon": 20.543217,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 48.7,
+      "destination_averages": [
+        56.1,
+        41.3
+      ],
+      "worst_sample_minutes": 66.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          66.6,
+          50.6,
+          54.6,
+          52.6
+        ],
+        "1": [
+          49.2,
+          39.1,
+          38.4,
+          38.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
     },
     {
       "id": "4zida:6a9947f9394c48a3870d7592",
@@ -3372,6 +3999,177 @@
       "first_seen_at": "2026-09-06T05:12:21.993736+02:00"
     },
     {
+      "id": "halo_oglasi:5425647088303",
+      "source": "halo_oglasi",
+      "source_id": "5425647088303",
+      "title": "Skroman lep stan",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/skroman-lep-stan/5425647088303?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260429/m/skroman-lep-stan-5425647088303-71815580472.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/260429/m/skroman-lep-stan-5425647088303-71815580472.jpg",
+      "price_eur": 200,
+      "address": "Pastirska",
+      "neighborhood": "Mali Mokri Lug",
+      "formatted_address": "Pastirska",
+      "approximate_location": true,
+      "lat": 44.7774154,
+      "lon": 20.5174722,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 53.5,
+      "destination_averages": [
+        61.9,
+        45.1
+      ],
+      "worst_sample_minutes": 65.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          61.6,
+          65.6,
+          64.6
+        ],
+        "1": [
+          39.4,
+          44.4,
+          51.4,
+          45.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425647609410",
+      "source": "halo_oglasi",
+      "source_id": "5425647609410",
+      "title": "Stan u zgradi,parking ,teretana",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/stan-u-zgradi-parking-teretana/5425647609410",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260831/m/stan-u-zgradi-parking-teretana-5425647609410-71816871510.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/260831/m/stan-u-zgradi-parking-teretana-5425647609410-71816871510.jpg",
+      "price_eur": 300,
+      "address": "27. marta",
+      "neighborhood": "Mali Mokri Lug",
+      "formatted_address": "27. marta",
+      "approximate_location": true,
+      "lat": 44.7751083,
+      "lon": 20.5307412,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": true,
+      "heating": null,
+      "average_minutes": 53.5,
+      "destination_averages": [
+        61.9,
+        45.1
+      ],
+      "worst_sample_minutes": 65.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          61.6,
+          65.6,
+          64.6
+        ],
+        "1": [
+          39.4,
+          44.4,
+          51.4,
+          45.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425647615549",
+      "source": "halo_oglasi",
+      "source_id": "5425647615549",
+      "title": "Izdajem namesten stan Mali Mokri Lug",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/izdajem-namesten-stan-mali-mokri-lug/5425647615549?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260901/m/izdajem-namesten-stan-mali-mokri-lug-5425647615549-71816882286.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/260901/m/izdajem-namesten-stan-mali-mokri-lug-5425647615549-71816882286.jpg",
+      "price_eur": 350,
+      "address": "20. oktobra",
+      "neighborhood": "Mali Mokri Lug",
+      "formatted_address": "20. oktobra",
+      "approximate_location": true,
+      "lat": 44.7740818,
+      "lon": 20.53077,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": true,
+      "heating": null,
+      "average_minutes": 53.5,
+      "destination_averages": [
+        61.9,
+        45.1
+      ],
+      "worst_sample_minutes": 65.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          61.6,
+          65.6,
+          64.6
+        ],
+        "1": [
+          39.4,
+          44.4,
+          51.4,
+          45.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
+    },
+    {
       "id": "oglasi_rs:03-3800096",
       "source": "oglasi_rs",
       "source_id": "03-3800096",
@@ -3601,6 +4399,63 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T13:37:41.378458+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425647601397",
+      "source": "halo_oglasi",
+      "source_id": "5425647601397",
+      "title": "Izdajemo garsonjeru Cerak",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/izdajemo-garsonjeru-cerak/5425647601397?kid=3",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260830/m/izdajemo-garsonjeru-cerak-5425647601397-71816854300.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/assets/global/img/refreshing64.gif",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/260830/m/izdajemo-garsonjeru-cerak-5425647601397-71816854300.jpg",
+      "price_eur": 300,
+      "address": "Ljubice Ivošević Dimitrov 61",
+      "neighborhood": "Cerak",
+      "formatted_address": "Ljubice Ivošević Dimitrov 61",
+      "approximate_location": true,
+      "lat": 44.749571,
+      "lon": 20.4209378,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 55.8,
+      "destination_averages": [
+        64.6,
+        47.0
+      ],
+      "worst_sample_minutes": 66.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          66.6,
+          61.6,
+          65.6,
+          64.6
+        ],
+        "1": [
+          50.4,
+          44.2,
+          45.4,
+          48.2
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
     },
     {
       "id": "halo_oglasi:5425647472248",
@@ -3886,6 +4741,58 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T13:37:41.378458+02:00"
+    },
+    {
+      "id": "oglasi_rs:03-3886062",
+      "source": "oglasi_rs",
+      "source_id": "03-3886062",
+      "title": "Stan 55m2 namešten smederevski put br.7",
+      "url": "https://www.oglasi.rs/oglas/03-3886062/stan-55m2-namesten-smederevski-put-br-7",
+      "images": [
+        "https://media.oglasi.rs/30d6b1ef-8816-4e1f-9f4c-bbf063fffe69/medium-IMG-82b9e6995655c7f5b5bb03e0ea06b74c-V.jpg",
+        "https://media.oglasi.rs/30d6b1ef-8816-4e1f-9f4c-bbf063fffe69/original-IMG-82b9e6995655c7f5b5bb03e0ea06b74c-V.jpg",
+        "https://media.oglasi.rs/30d6b1ef-8816-4e1f-9f4c-bbf063fffe69/original-IMG-63676de933ddcb224fa9ff04ac9b6450-V.jpg"
+      ],
+      "image_url": "https://media.oglasi.rs/30d6b1ef-8816-4e1f-9f4c-bbf063fffe69/medium-IMG-82b9e6995655c7f5b5bb03e0ea06b74c-V.jpg",
+      "price_eur": 250,
+      "address": "Smederevski put br 7",
+      "neighborhood": "Mali mokri lug",
+      "formatted_address": "Smederevski put br 7",
+      "approximate_location": true,
+      "lat": 44.7738714,
+      "lon": 20.5510303,
+      "area_m2": 55.0,
+      "rooms": "Jednoiposoban",
+      "furnished": false,
+      "heating": "Na struju",
+      "average_minutes": 58.6,
+      "destination_averages": [
+        68.3,
+        48.9
+      ],
+      "worst_sample_minutes": 70.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          66.6,
+          70.6,
+          65.6,
+          70.6
+        ],
+        "1": [
+          49.2,
+          48.4,
+          52.4,
+          45.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-09-06T16:26:07.665607+02:00"
     },
     {
       "id": "4zida:6a9ac59616792f12490093e1",
