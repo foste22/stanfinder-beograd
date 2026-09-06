@@ -2,16 +2,31 @@ app:
   max_price_eur: 400
   max_average_minutes: 60
   max_single_trip_minutes: 75
-  min_samples_per_destination: 3
+  min_samples_per_destination: 4
   timezone: Europe/Belgrade
 
 routing:
-  # Tipični termini radnim danom. Za svaki novi oglas računaju se obe destinacije.
+  # Tipični termini radnim danom.
   sample_times:
     - "07:30"
     - "09:00"
     - "14:00"
     - "17:00"
+
+  # Besplatni GTFS model: pešačenje do/od stajališta procenjuje se
+  # geometrijski. Ovo je dovoljno dobro za automatsko rangiranje,
+  # ali nije live stanje u saobraćaju.
+  walking_speed_mps: 1.33
+  walking_distance_factor: 1.20
+  max_access_walk_m: 1200
+  max_egress_walk_m: 1200
+  max_transfer_walk_m: 350
+  max_transit_rides: 4
+
+  # Zvanični statički GTFS Grada Beograda
+  gtfs_url: "https://data.gov.rs/sr/datasets/r/729be9a1-7ed9-453d-9a3d-68fa30f07529"
+  gtfs_path: "routing_data/beograd_gtfs.zip"
+  gtfs_max_age_hours: 24
 
 destinations:
   - name: "Fakultet 1"
@@ -30,4 +45,4 @@ sources:
 
 notifications:
   telegram:
-    enabled: true
+    enabled: false

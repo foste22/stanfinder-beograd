@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 import yaml
 
 from scrapers.four_zida import FourZidaScraper
-from services.google_maps import GoogleMapsClient
+from services.gtfs_router import GTFSRouter
 from storage import load_state, save_public, save_state
 from notify import notify_telegram
 
@@ -25,7 +25,7 @@ def load_config() -> dict:
 
 def next_workday(now: datetime) -> datetime:
     d = now
-    if d.weekday() >= 5:  # subota/nedelja
+    if d.weekday() >= 5:
         d += timedelta(days=(7 - d.weekday()))
     return d
 
@@ -33,17 +33,18 @@ def next_workday(now: datetime) -> datetime:
 def sample_datetimes(timezone_name: str, times: list[str]) -> list[datetime]:
     tz = ZoneInfo(timezone_name)
     now = datetime.now(tz)
-    day = next_workday(now)
+    base = next_workday(now)
 
     result = []
     for t in times:
         hh, mm = map(int, t.split(":"))
-        dt = day.replace(hour=hh, minute=mm, second=0, microsecond=0)
+        dt = base.replace(hour=hh, minute=mm, second=0, microsecond=0)
+
         if dt <= now:
-            # Ako je današnji termin već prošao, koristi sledeći radni dan.
             dt += timedelta(days=1)
             while dt.weekday() >= 5:
                 dt += timedelta(days=1)
+
         result.append(dt)
     return result
 
@@ -55,6 +56,7 @@ def listing_key(source: str, source_id: str) -> str:
 def main() -> None:
     cfg = load_config()
     app_cfg = cfg["app"]
+    route_cfg = cfg["routing"]
     source_cfg = cfg["sources"]["four_zida"]
     destinations = cfg["destinations"]
 
@@ -69,20 +71,17 @@ def main() -> None:
         source_cfg["search_url"],
         delay_seconds=float(source_cfg.get("request_delay_seconds", 1.2)),
     )
-    candidates = scraper.get_latest_candidates()
 
+    candidates = scraper.get_latest_candidates()
     unseen = [
         c for c in candidates
         if listing_key("4zida", c.source_id) not in state["seen"]
-    ]
+    ][: int(source_cfg.get("max_new_details_per_run", 20))]
 
-    max_details = int(source_cfg.get("max_new_details_per_run", 20))
-    unseen = unseen[:max_details]
+    now = datetime.now(ZoneInfo(app_cfg["timezone"]))
+    now_iso = now.isoformat()
 
-    # Prvo parsiramo i primenjujemo najjeftiniji filter: cena.
     parsed = []
-    now_iso = datetime.now(ZoneInfo(app_cfg["timezone"])).isoformat()
-
     for c in unseen:
         key = listing_key("4zida", c.source_id)
         try:
@@ -95,129 +94,137 @@ def main() -> None:
                 state["seen"][key] = {"status": "over_price", "seen_at": now_iso}
                 continue
 
+            if item.lat is None or item.lon is None:
+                # Ne izmišljamo lokaciju. Sledeće pokretanje može ponovo probati
+                # ako se parser bude unapredio; trenutno beležimo status.
+                state["seen"][key] = {
+                    "status": "missing_map_coordinates",
+                    "seen_at": now_iso,
+                    "address": item.address,
+                    "url": item.url,
+                }
+                continue
+
             parsed.append(item)
+
         except Exception as exc:
             print(f"[WARN] Neuspešno čitanje {c.url}: {exc}")
-            # Ne markiramo kao seen kako bi sledeći ciklus pokušao ponovo.
-
-    api_key = os.getenv("GOOGLE_MAPS_API_KEY", "").strip()
-    maps = GoogleMapsClient(api_key)
-
-    # Geokodiranje.
-    geo_items = []
-    for item in parsed:
-        key = listing_key(item.source, item.source_id)
-        try:
-            geo = maps.geocode(item.address)
-            if not geo:
-                state["seen"][key] = {"status": "geocode_failed", "seen_at": now_iso}
-                continue
-            geo_items.append((item, geo))
-        except Exception as exc:
-            print(f"[WARN] Geocoding neuspešan za {item.address}: {exc}")
-
-    # Google Routes transit matrica podržava max 100 origin×destination za TRANSIT.
-    # Sa 2 destinacije obrađujemo najviše 50 stanova odjednom; naš MVP je podešen na 20.
-    route_samples: dict[int, dict[int, list[float]]] = {
-        i: {d: [] for d in range(len(destinations))}
-        for i in range(len(geo_items))
-    }
-
-    times = sample_datetimes(app_cfg["timezone"], cfg["routing"]["sample_times"])
-    origins = [{"lat": geo["lat"], "lon": geo["lon"]} for _, geo in geo_items]
-
-    if origins:
-        for departure in times:
-            matrix = maps.route_matrix(origins, destinations, departure)
-            for oi in range(len(origins)):
-                for di in range(len(destinations)):
-                    val = matrix.get(oi, {}).get(di)
-                    if val is not None:
-                        route_samples[oi][di].append(val)
 
     accepted_now = []
 
-    for i, (item, geo) in enumerate(geo_items):
-        key = listing_key(item.source, item.source_id)
-        per_dest = route_samples[i]
+    if parsed:
+        router = GTFSRouter(
+            gtfs_path=route_cfg["gtfs_path"],
+            gtfs_url=route_cfg["gtfs_url"],
+            max_age_hours=float(route_cfg.get("gtfs_max_age_hours", 24)),
+            walking_speed_mps=float(route_cfg.get("walking_speed_mps", 1.33)),
+            walking_distance_factor=float(route_cfg.get("walking_distance_factor", 1.20)),
+            max_access_walk_m=float(route_cfg.get("max_access_walk_m", 1200)),
+            max_egress_walk_m=float(route_cfg.get("max_egress_walk_m", 1200)),
+            max_transfer_walk_m=float(route_cfg.get("max_transfer_walk_m", 350)),
+            max_transit_rides=int(route_cfg.get("max_transit_rides", 4)),
+        )
 
-        min_samples = int(app_cfg["min_samples_per_destination"])
-        if any(len(per_dest[d]) < min_samples for d in per_dest):
-            state["seen"][key] = {
-                "status": "insufficient_route_data",
-                "seen_at": now_iso,
+        sample_times = sample_datetimes(app_cfg["timezone"], route_cfg["sample_times"])
+
+        for item in parsed:
+            key = listing_key(item.source, item.source_id)
+            per_dest: dict[int, list[float]] = {d: [] for d in range(len(destinations))}
+            route_failed = False
+
+            print(f"Računam: {item.address} / {item.price_eur} €")
+
+            for departure in sample_times:
+                for di, dest in enumerate(destinations):
+                    try:
+                        minutes = router.travel_minutes(
+                            item.lat, item.lon,
+                            dest["lat"], dest["lon"],
+                            departure,
+                        )
+                    except Exception as exc:
+                        print(f"[WARN] Ruta nije izračunata: {exc}")
+                        route_failed = True
+                        minutes = None
+
+                    if minutes is not None:
+                        per_dest[di].append(minutes)
+
+            min_samples = int(app_cfg["min_samples_per_destination"])
+            if route_failed or any(len(per_dest[d]) < min_samples for d in per_dest):
+                state["seen"][key] = {
+                    "status": "insufficient_route_data",
+                    "seen_at": now_iso,
+                    "address": item.address,
+                }
+                continue
+
+            dest_avgs = [
+                round(statistics.mean(per_dest[d]), 1)
+                for d in range(len(destinations))
+            ]
+
+            all_samples = [x for vals in per_dest.values() for x in vals]
+            overall_avg = round(statistics.mean(all_samples), 1)
+            worst_trip = round(max(all_samples), 1)
+
+            if overall_avg > float(app_cfg["max_average_minutes"]):
+                state["seen"][key] = {
+                    "status": "over_average_time",
+                    "seen_at": now_iso,
+                    "average_minutes": overall_avg,
+                }
+                continue
+
+            if worst_trip > float(app_cfg["max_single_trip_minutes"]):
+                state["seen"][key] = {
+                    "status": "over_single_trip_time",
+                    "seen_at": now_iso,
+                    "worst_trip_minutes": worst_trip,
+                }
+                continue
+
+            record = {
+                "id": key,
+                "source": item.source,
+                "source_id": item.source_id,
+                "title": item.title,
+                "url": item.url,
+                "price_eur": item.price_eur,
                 "address": item.address,
+                "formatted_address": item.address,
+                "approximate_location": item.approximate_location,
+                "lat": item.lat,
+                "lon": item.lon,
+                "area_m2": item.area_m2,
+                "rooms": item.rooms,
+                "furnished": item.furnished,
+                "heating": item.heating,
+                "average_minutes": overall_avg,
+                "destination_averages": dest_avgs,
+                "worst_sample_minutes": worst_trip,
+                "sample_times": route_cfg["sample_times"],
+                "route_samples": {str(d): per_dest[d] for d in per_dest},
+                "routing_method": "Belgrade GTFS + approximate walking",
+                "first_seen_at": now_iso,
             }
-            continue
 
-        dest_avgs = [
-            round(statistics.mean(per_dest[d]), 1)
-            for d in range(len(destinations))
-        ]
-        all_samples = [x for vals in per_dest.values() for x in vals]
-        overall_avg = round(statistics.mean(all_samples), 1)
-        worst_trip = round(max(all_samples), 1)
+            existing_index = next(
+                (idx for idx, x in enumerate(state["listings"]) if x["id"] == key),
+                None,
+            )
+            if existing_index is None:
+                state["listings"].append(record)
+                accepted_now.append(record)
+            else:
+                state["listings"][existing_index] = record
 
-        if overall_avg > float(app_cfg["max_average_minutes"]):
             state["seen"][key] = {
-                "status": "over_average_time",
+                "status": "accepted",
                 "seen_at": now_iso,
                 "average_minutes": overall_avg,
             }
-            continue
 
-        if worst_trip > float(app_cfg["max_single_trip_minutes"]):
-            state["seen"][key] = {
-                "status": "over_single_trip_time",
-                "seen_at": now_iso,
-                "worst_trip_minutes": worst_trip,
-            }
-            continue
-
-        record = {
-            "id": key,
-            "source": item.source,
-            "source_id": item.source_id,
-            "title": item.title,
-            "url": item.url,
-            "price_eur": item.price_eur,
-            "address": item.address,
-            "formatted_address": geo["formatted_address"],
-            "approximate_location": geo["approximate"],
-            "lat": geo["lat"],
-            "lon": geo["lon"],
-            "area_m2": item.area_m2,
-            "rooms": item.rooms,
-            "furnished": item.furnished,
-            "heating": item.heating,
-            "average_minutes": overall_avg,
-            "destination_averages": dest_avgs,
-            "worst_sample_minutes": worst_trip,
-            "sample_times": cfg["routing"]["sample_times"],
-            "route_samples": {
-                str(d): per_dest[d] for d in per_dest
-            },
-            "first_seen_at": now_iso,
-        }
-
-        # U slučaju ponovnog pojavljivanja istog ID-a ne pravimo duplikat.
-        existing_index = next(
-            (idx for idx, x in enumerate(state["listings"]) if x["id"] == key),
-            None,
-        )
-        if existing_index is None:
-            state["listings"].append(record)
-            accepted_now.append(record)
-        else:
-            state["listings"][existing_index] = record
-
-        state["seen"][key] = {
-            "status": "accepted",
-            "seen_at": now_iso,
-            "average_minutes": overall_avg,
-        }
-
-    # Najbolje rute prve; ista ruta -> niža cena prva.
     state["listings"].sort(
         key=lambda x: (x.get("average_minutes", 999), x.get("price_eur", 9999))
     )
@@ -232,6 +239,7 @@ def main() -> None:
             "max_single_trip_minutes": app_cfg["max_single_trip_minutes"],
             "accepted_count": len(state["listings"]),
             "new_accepted_this_run": len(accepted_now),
+            "routing_method": "Official Belgrade GTFS; schedule-based, no live traffic",
         },
         destinations=destinations,
     )
@@ -245,7 +253,8 @@ def main() -> None:
 
     print(
         f"Gotovo. Kandidati={len(candidates)}, novi={len(unseen)}, "
-        f"prihvaćeni sada={len(accepted_now)}, ukupno prihvaćeni={len(state['listings'])}"
+        f"za rute={len(parsed)}, prihvaćeni sada={len(accepted_now)}, "
+        f"ukupno prihvaćeni={len(state['listings'])}"
     )
 
 
