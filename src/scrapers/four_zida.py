@@ -30,6 +30,7 @@ class Listing:
     title: str
     price_eur: int
     address: str
+    neighborhood: str | None
     area_m2: float | None
     rooms: str | None
     furnished: bool | None
@@ -183,6 +184,97 @@ class FourZidaScraper:
                 if cls._valid_belgrade(lat, lon):
                     return lat, lon
         return None, None
+
+
+    # -----------------------------------------------------------------
+    # NASELJE / KRAJ
+    # -----------------------------------------------------------------
+
+    @staticmethod
+    def _location_slug(url: str) -> str | None:
+        try:
+            parts = [p for p in urlparse(url).path.split("/") if p]
+            if len(parts) >= 2 and parts[0] == "izdavanje-stanova":
+                return parts[1]
+        except Exception:
+            pass
+        return None
+
+    @classmethod
+    def _extract_neighborhood(cls, soup: BeautifulSoup, url: str) -> str | None:
+        """
+        4zida detaljni URL je:
+          /izdavanje-stanova/{lokacija}/{tip}/{id}
+
+        Na stranici obično postoji breadcrumb/link ka toj lokaciji.
+        Njegov tekst je upravo ono što želimo da prikažemo:
+        Borča, Ledine, Medaković 2, Šumice...
+        """
+        slug = cls._location_slug(url)
+        if not slug:
+            return None
+
+        wanted_path = f"/izdavanje-stanova/{slug}".rstrip("/")
+
+        for a in soup.find_all("a", href=True):
+            try:
+                href_path = urlparse(urljoin(BASE_URL, a.get("href", ""))).path.rstrip("/")
+            except Exception:
+                continue
+
+            if href_path != wanted_path:
+                continue
+
+            text = " ".join(a.stripped_strings).strip()
+            if not text:
+                continue
+
+            low = text.lower()
+            if low in {"izdavanje stanova", "stanovi", "beograd"}:
+                continue
+
+            # Breadcrumb ponekad doda višak whitespace-a; ostalo čuvamo
+            # upravo kako ga portal prikazuje (sa č/ć/š/ž/đ).
+            return re.sub(r"\s+", " ", text)
+
+        # Fallback samo ako breadcrumb nije prisutan.
+        # U većini slučajeva neće biti korišćen.
+        suffixes = [
+            "-novi-beograd-beograd",
+            "-vozdovac-opstina-beograd",
+            "-palilula-opstina-beograd",
+            "-zemun-opstina-beograd",
+            "-zvezdara-opstina-beograd",
+            "-cukarica-opstina-beograd",
+            "-rakovica-opstina-beograd",
+            "-stari-grad-opstina-beograd",
+            "-savski-venac-opstina-beograd",
+            "-vracar-opstina-beograd",
+            "-surcin-opstina-beograd",
+            "-grocka-opstina-beograd",
+            "-barajevo-opstina-beograd",
+            "-obrenovac-opstina-beograd",
+            "-sopot-opstina-beograd",
+            "-mladenovac-opstina-beograd",
+            "-lazarevac-opstina-beograd",
+        ]
+        short = slug
+        for suffix in suffixes:
+            if short.endswith(suffix):
+                short = short[:-len(suffix)]
+                break
+
+        if not short:
+            return None
+
+        text = short.replace("-", " ").title()
+        simple_fixes = {
+            "Borca": "Borča",
+            "Cukaricka": "Čukarička",
+            "Karaburma": "Karaburma",
+        }
+        return simple_fixes.get(text, text)
+
 
     # -----------------------------------------------------------------
     # FOTOGRAFIJE
@@ -353,14 +445,17 @@ class FourZidaScraper:
 
         return cls.clean_image_urls(candidates, expected_listing_id=source_id)
 
-    def refresh_gallery(self, url: str, source_id: str) -> list[str]:
+    def refresh_details(self, url: str, source_id: str) -> dict:
         time.sleep(self.delay_seconds)
         html = self._get(url)
-        return self._extract_images(
-            BeautifulSoup(html, "html.parser"),
-            html,
-            source_id,
-        )
+        soup = BeautifulSoup(html, "html.parser")
+        return {
+            "images": self._extract_images(soup, html, source_id),
+            "neighborhood": self._extract_neighborhood(soup, url),
+        }
+
+    def refresh_gallery(self, url: str, source_id: str) -> list[str]:
+        return self.refresh_details(url, source_id)["images"]
 
     def check_active(self, url: str, source_id: str) -> bool | None:
         time.sleep(self.delay_seconds)
@@ -413,6 +508,7 @@ class FourZidaScraper:
 
         lat, lon = self._extract_coordinates(soup, html)
         images = self._extract_images(soup, html, candidate.source_id)
+        neighborhood = self._extract_neighborhood(soup, candidate.url)
 
         return Listing(
             source="4zida",
@@ -421,6 +517,7 @@ class FourZidaScraper:
             title=title,
             price_eur=price,
             address=self._parse_address(title),
+            neighborhood=neighborhood,
             area_m2=self._parse_area(title),
             rooms=self._guess_rooms(title, full_text),
             furnished=furnished,

@@ -150,7 +150,7 @@ def main() -> None:
 
     priority = [
         rec for rec in four_zida_records
-        if len(rec.get("images") or []) <= 1
+        if len(rec.get("images") or []) <= 1 or not rec.get("neighborhood")
     ]
 
     remaining = [
@@ -172,10 +172,15 @@ def main() -> None:
 
     for rec in refresh_batch:
         try:
-            fresh_images = scraper.refresh_gallery(
+            refreshed = scraper.refresh_details(
                 rec["url"],
                 rec["source_id"],
             )
+            fresh_images = refreshed.get("images") or []
+            fresh_neighborhood = refreshed.get("neighborhood")
+
+            if fresh_neighborhood:
+                rec["neighborhood"] = fresh_neighborhood
 
             # Ovo je uspešno učitana originalna stranica oglasa.
             # Ako ona nema nijednu validnu fotografiju tog oglasa,
@@ -359,6 +364,7 @@ def main() -> None:
                 "image_url": item.images[0],
                 "price_eur": item.price_eur,
                 "address": item.address,
+                "neighborhood": item.neighborhood,
                 "formatted_address": item.address,
                 "approximate_location": item.approximate_location,
                 "lat": item.lat,
