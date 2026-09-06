@@ -45,7 +45,8 @@ class BasePortalScraper:
         self.delay_seconds = delay_seconds
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "StanFinder-Beograd/1.0 (personal apartment search)",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                          "(KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
             "Accept-Language": "sr-RS,sr;q=0.9,en;q=0.7",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         })
@@ -244,38 +245,59 @@ class NekretnineRSScraper(BasePortalScraper):
         ))
 
     def get_latest_candidates(self):
-        """
-        Čitamo prve dve strane aktuelne pretrage do ~400 €.
-
-        Nekretnine.rs ume da rasporedi "novo" oglase između premium/standard/lite
-        grupa, pa jedna jedina strana može da propusti deo novih jeftinih stanova.
-        Dve strane su i dalje mali, umeren broj zahteva.
-        """
+        # Prve dve strane filtrirane pretrage, plus raw HTML fallback.
         found = {}
+        pages_ok = 0
+        anchors_seen = 0
+        raw_matches = 0
 
         for page in (1, 2):
             page_url = self._page_url(self.search_url, page)
-            html = self._get(page_url)
+
+            try:
+                html = self._get(page_url)
+            except Exception as exc:
+                print(f"[WARN] Nekretnine.rs list page {page_url}: {exc}")
+                continue
+
+            pages_ok += 1
             soup = BeautifulSoup(html, "html.parser")
 
             for a in soup.find_all("a", href=True):
-                href = a["href"]
+                href = a.get("href", "")
                 m = re.search(r"/oglasi/(\d+)/?", href)
                 if not m:
                     continue
 
+                anchors_seen += 1
                 sid = m.group(1)
                 url = urljoin(self.base_url, href)
-                text = " ".join(a.stripped_strings)
+                text = " ".join(a.stripped_strings).strip()
 
                 found.setdefault(
                     sid,
                     ListingCandidate(sid, url, text),
                 )
 
+            raw_pattern = r'href=["\']([^"\']*/oglasi/(\d+)/?[^"\']*)["\']'
+            for m in re.finditer(raw_pattern, html, flags=re.I):
+                raw_matches += 1
+                href, sid = m.group(1), m.group(2)
+                href = href.replace("&amp;", "&")
+                url = urljoin(self.base_url, href)
+                found.setdefault(
+                    sid,
+                    ListingCandidate(sid, url, ""),
+                )
+
             if page == 1:
                 time.sleep(self.delay_seconds)
 
+        print(
+            "[NEKRETNINE DISCOVERY] "
+            f"pages={pages_ok} anchors={anchors_seen} "
+            f"raw_matches={raw_matches} unique={len(found)}"
+        )
         return list(found.values())
 
     def get_listing(self, c: ListingCandidate):
@@ -443,24 +465,10 @@ class OglasiRSScraper(BasePortalScraper):
 
 
 class HaloOglasiScraper(BasePortalScraper):
-    """
-    Halo Oglasi adapter bez zaobilaženja Cloudflare zaštite.
-
-    Desktop www.halooglasi.com trenutno vraća 403 automatizovanim requests
-    klijentima, ali Halo ima javni alternativni prikaz:
-        https://smsprint.halooglasi.com/
-
-    Taj prikaz sadrži listu oglasa, cene, lokacije, kvadrature, sobnost,
-    broj fotografija i javne linkove. Koristimo ga za čitanje podataka,
-    dok korisniku uvek čuvamo normalan www.halooglasi.com URL.
-    """
-
     source = "halo_oglasi"
     base_url = "https://smsprint.halooglasi.com"
     public_base_url = "https://www.halooglasi.com"
 
-    # Razdvajanje po strukturi daje mnogo bolju pokrivenost jeftinih stanova
-    # nego jedna opšta stranica puna premium oglasa.
     STRUCTURES = (
         "garsonjera",
         "jednosoban",
@@ -470,9 +478,12 @@ class HaloOglasiScraper(BasePortalScraper):
         "trosoban",
     )
 
-    def __init__(self, search_url: str, delay_seconds: float = 1.5, pages_per_category: int = 4):
-        # Čak i ako stari config slučajno sadrži www host, prebaci na javni
-        # smsprint prikaz.
+    def __init__(
+        self,
+        search_url: str,
+        delay_seconds: float = 1.5,
+        pages_per_category: int = 4,
+    ):
         search_url = search_url.replace(
             "https://www.halooglasi.com",
             "https://smsprint.halooglasi.com",
@@ -480,13 +491,7 @@ class HaloOglasiScraper(BasePortalScraper):
         super().__init__(search_url, delay_seconds)
         self.pages_per_category = max(1, int(pages_per_category))
         self.card_cache: dict[str, dict] = {}
-        self.discovery_stats = {
-            "pages_requested": 0,
-            "links_seen": 0,
-            "cards_parsed": 0,
-            "under_price": 0,
-            "unique_candidates": 0,
-        }
+        self.discovery_stats = {}
 
     @staticmethod
     def _normal_public_url(url: str) -> str:
@@ -503,6 +508,31 @@ class HaloOglasiScraper(BasePortalScraper):
         )
 
     @staticmethod
+    def _with_page(url: str, page: int) -> str:
+        parts = urlsplit(url)
+        params = dict(parse_qsl(parts.query, keep_blank_values=True))
+        if page <= 1:
+            params.pop("page", None)
+        else:
+            params["page"] = str(page)
+        return urlunsplit((
+            parts.scheme,
+            parts.netloc,
+            parts.path,
+            urlencode(params),
+            parts.fragment,
+        ))
+
+    def _listing_pages(self) -> list[str]:
+        root = self.search_url.rstrip("/")
+        bases = [root] + [f"{root}/{s}" for s in self.STRUCTURES]
+        pages = []
+        for base in bases:
+            for page in range(1, self.pages_per_category + 1):
+                pages.append(self._with_page(base, page))
+        return pages
+
+    @staticmethod
     def _halo_images(node) -> list[str]:
         candidates = []
 
@@ -514,8 +544,9 @@ class HaloOglasiScraper(BasePortalScraper):
                 "data-lazy-src",
                 "data-image",
             ):
-                if img.get(attr):
-                    candidates.append(img.get(attr))
+                value = img.get(attr)
+                if value:
+                    candidates.append(value)
 
             srcset = img.get("srcset")
             if srcset:
@@ -526,31 +557,30 @@ class HaloOglasiScraper(BasePortalScraper):
                 )
 
         result, seen = [], set()
-        for raw in candidates:
-            if not raw:
-                continue
 
-            url = urljoin("https://smsprint.halooglasi.com", str(raw).strip())
-            p = urlparse(url)
-            host = p.netloc.lower()
+        for raw in candidates:
+            url = urljoin(
+                "https://smsprint.halooglasi.com",
+                str(raw).strip(),
+            )
+            parsed = urlparse(url)
+            host = parsed.netloc.lower()
 
             if not (
                 host == "img.halooglasi.com"
                 or host.endswith(".img.halooglasi.com")
-                or "halooglasi.com" in host
+                or host.endswith("halooglasi.com")
             ):
                 continue
 
             low = url.lower()
             if any(x in low for x in (
                 "logo", "avatar", "icon", "sprite", "banner",
-                "googletagmanager", "placeholder"
+                "googletagmanager", "placeholder",
             )):
                 continue
 
-            # Halo slike ponekad nemaju klasičnu ekstenziju u URL-u,
-            # zato je host važniji od ekstenzije.
-            clean = p._replace(fragment="").geturl()
+            clean = parsed._replace(fragment="").geturl()
             if clean not in seen:
                 seen.add(clean)
                 result.append(clean)
@@ -559,25 +589,21 @@ class HaloOglasiScraper(BasePortalScraper):
 
     @staticmethod
     def _candidate_card(anchor):
-        """
-        Na smsprint listi pronađi najmanjeg pretka koji izgleda kao jedna
-        kartica oglasa: ima cenu + lokaciju/kvadraturu.
-
-        Ne oslanjamo se na CSS klase jer Halo može da ih promeni.
-        """
         node = anchor
-        best = None
 
-        for _ in range(9):
+        for _ in range(12):
             node = getattr(node, "parent", None)
             if node is None:
                 break
 
             text = " ".join(node.stripped_strings)
-            if len(text) > 5000:
+
+            if len(text) > 7000:
                 break
 
-            has_price = bool(re.search(r"\b\d[\d.\s]*\s*€", text))
+            has_price = bool(
+                re.search(r"\b\d[\d.\s\xa0]*\s*€", text)
+            )
             has_property = (
                 "Kvadratura" in text
                 or "Broj soba" in text
@@ -585,13 +611,9 @@ class HaloOglasiScraper(BasePortalScraper):
             )
 
             if has_price and has_property:
-                best = node
-                # Nastavi još malo samo ako je trenutno ekstremno mali;
-                # inače je ovo verovatno kartica.
-                if len(text) >= 80:
-                    break
+                return node
 
-        return best
+        return None
 
     @staticmethod
     def _parse_card_lines(card, title: str) -> dict:
@@ -605,12 +627,14 @@ class HaloOglasiScraper(BasePortalScraper):
 
         price = None
         for line in lines:
-            m = re.fullmatch(r"([\d.\s]+)\s*€", line)
-            if m:
-                raw = re.sub(r"[.\s]", "", m.group(1))
-                if raw.isdigit():
-                    price = int(raw)
-                    break
+            m = re.fullmatch(r"([\d.\s\xa0]+)\s*€", line)
+            if not m:
+                continue
+
+            raw = re.sub(r"[.\s\xa0]", "", m.group(1))
+            if raw.isdigit():
+                price = int(raw)
+                break
 
         area = None
         rooms = None
@@ -620,6 +644,7 @@ class HaloOglasiScraper(BasePortalScraper):
                 m = re.search(r"(\d+(?:[.,]\d+)?)", line)
                 if m:
                     area = float(m.group(1).replace(",", "."))
+
             if "Broj soba" in line:
                 m = re.search(r"(\d+(?:[.,]\d+)?)", line)
                 if m:
@@ -629,38 +654,33 @@ class HaloOglasiScraper(BasePortalScraper):
         address = None
         municipality = None
 
-        # Stabilan obrazac liste:
-        # Beograd
-        # Opština X
-        # Naselje
-        # Ulica
         try:
             idx = next(i for i, x in enumerate(lines) if x == "Beograd")
-            loc = lines[idx + 1: idx + 7]
-
-            # odbaci opštinu iz kandidata za naselje/ulicu
+            loc = lines[idx + 1: idx + 8]
             useful = []
+
             for x in loc:
                 if x.startswith("Opština "):
                     municipality = x[len("Opština "):].strip()
                     continue
+
                 if "Kvadratura" in x or "Broj soba" in x:
                     break
-                # preskoči očigledne numeričke/tehničke stavke
+
                 if re.fullmatch(r"[\d./-]+", x):
                     continue
+
                 useful.append(x)
 
             if useful:
-                neighborhood = useful[0].strip()
+                neighborhood = useful[0]
+
             if len(useful) >= 2:
-                address = useful[1].strip()
+                address = useful[1]
 
         except StopIteration:
             pass
 
-        # Ako ulica nije dostupna, naselje je i dalje dovoljno za približan
-        # geocoding; routing će na sajtu biti označen sa ≈ lokacija.
         address = address or neighborhood or municipality or title
 
         return {
@@ -673,161 +693,140 @@ class HaloOglasiScraper(BasePortalScraper):
             "text": joined,
         }
 
-@staticmethod
-def _with_page(url: str, page: int) -> str:
-    parts = urlsplit(url)
-    params = dict(parse_qsl(parts.query, keep_blank_values=True))
-    if page <= 1:
-        params.pop("page", None)
-    else:
-        params["page"] = str(page)
-    return urlunsplit((
-        parts.scheme,
-        parts.netloc,
-        parts.path,
-        urlencode(params),
-        parts.fragment,
-    ))
+    def get_latest_candidates(self):
+        found: dict[str, ListingCandidate] = {}
+        self.card_cache = {}
 
-def _listing_pages(self) -> list[str]:
-    """
-    Čitamo:
-    - opštu Beograd stranicu;
-    - svaku relevantnu sobnost;
-    - više stranica svake liste.
+        pages_ok = 0
+        links_seen = 0
+        cards_parsed = 0
+        under_price = 0
+        raw_id_matches = 0
 
-    Halo raspoređuje premium i standard oglase tako da jeftin oglas
-    često nije na prvoj strani. Deduplikacija po ID-u sprečava duplikate.
-    """
-    root = self.search_url.rstrip("/")
-    bases = [root] + [f"{root}/{s}" for s in self.STRUCTURES]
-    pages = []
-    for base in bases:
-        for page in range(1, self.pages_per_category + 1):
-            pages.append(self._with_page(base, page))
-    return pages
+        for i, page_url in enumerate(self._listing_pages()):
+            if i:
+                time.sleep(self.delay_seconds)
 
-def get_latest_candidates(self):
-    found: dict[str, ListingCandidate] = {}
-    self.card_cache = {}
-    self.discovery_stats = {
-        "pages_requested": 0,
-        "links_seen": 0,
-        "cards_parsed": 0,
-        "under_price": 0,
-        "unique_candidates": 0,
-    }
-
-    for i, page_url in enumerate(self._listing_pages()):
-        if i:
-            time.sleep(self.delay_seconds)
-
-        try:
-            html = self._get(page_url)
-        except Exception as exc:
-            # Jedna prazna/nepostojeća stranica ne sme da obori ceo Halo.
-            print(f"[WARN] Halo list page {page_url}: {exc}")
-            continue
-
-        self.discovery_stats["pages_requested"] += 1
-        soup = BeautifulSoup(html, "html.parser")
-
-        page_ids = set()
-
-        for a in soup.find_all("a", href=True):
-            href = a.get("href", "")
-
-            if "/nekretnine/izdavanje-stanova/" not in href:
+            try:
+                html = self._get(page_url)
+            except Exception as exc:
+                print(f"[WARN] Halo list page {page_url}: {exc}")
                 continue
 
-            m = re.search(r"/(\d{10,})(?:/?(?:\?|$))", href)
-            if not m:
-                continue
+            pages_ok += 1
+            soup = BeautifulSoup(html, "html.parser")
+            page_ids = set()
 
-            self.discovery_stats["links_seen"] += 1
-            sid = m.group(1)
+            raw_id_matches += len(re.findall(
+                r'/nekretnine/izdavanje-stanova/[^"\'<> ]+/(\d{10,})',
+                html,
+                flags=re.I,
+            ))
 
-            # Isti oglas može imati naslov + sliku kao dva linka.
-            if sid in page_ids:
-                continue
-            page_ids.add(sid)
+            for a in soup.find_all("a", href=True):
+                href = a.get("href", "")
 
-            title = " ".join(a.stripped_strings).strip()
-            if not title:
-                # Pokušaj naslov iz kartice ako je kliknuta slika.
-                title = ""
+                if "/nekretnine/izdavanje-stanova/" not in href:
+                    continue
 
-            card = self._candidate_card(a)
-            if card is None:
-                continue
+                m = re.search(r"/(\d{10,})(?:/?(?:\?|$))", href)
+                if not m:
+                    continue
 
-            if not title:
-                h = card.find(["h1", "h2", "h3", "h4"])
-                if h:
-                    title = " ".join(h.stripped_strings).strip()
+                links_seen += 1
+                sid = m.group(1)
 
-            if not title:
-                # Poslednji fallback: tekst linka iz druge veze u kartici.
-                links = [
-                    " ".join(x.stripped_strings).strip()
-                    for x in card.find_all("a", href=True)
-                ]
-                title = next((x for x in links if len(x) >= 4), f"Halo oglas {sid}")
+                if sid in page_ids:
+                    continue
 
-            parsed = self._parse_card_lines(card, title)
-            self.discovery_stats["cards_parsed"] += 1
-            price = parsed.get("price_eur")
+                page_ids.add(sid)
 
-            if price is None or price > 400:
-                continue
+                card = self._candidate_card(a)
+                if card is None:
+                    continue
 
-            self.discovery_stats["under_price"] += 1
+                title = " ".join(a.stripped_strings).strip()
 
-            sms_url = urljoin(self.base_url, href)
-            public_url = self._normal_public_url(sms_url)
-            card_images = self._halo_images(card)
+                if not title:
+                    h = card.find(["h1", "h2", "h3", "h4"])
+                    if h:
+                        title = " ".join(h.stripped_strings).strip()
 
-            # Ako smo oglas već videli na drugoj kategoriji/strani,
-            # zadrži bogatiji zapis (više slika / preciznija adresa).
-            old = self.card_cache.get(sid)
-            candidate_data = {
-                **parsed,
-                "title": title,
-                "sms_url": sms_url,
-                "public_url": public_url,
-                "images": card_images,
-            }
+                if not title:
+                    links = [
+                        " ".join(x.stripped_strings).strip()
+                        for x in card.find_all("a", href=True)
+                    ]
+                    title = next(
+                        (x for x in links if len(x) >= 4),
+                        f"Halo oglas {sid}",
+                    )
 
-            if old:
-                old_score = (len(old.get("images") or []), bool(old.get("address")), len(old.get("text") or ""))
-                new_score = (len(card_images), bool(parsed.get("address")), len(parsed.get("text") or ""))
-                if new_score > old_score:
-                    self.card_cache[sid] = candidate_data
-                continue
+                data = self._parse_card_lines(card, title)
+                cards_parsed += 1
+                price = data.get("price_eur")
 
-            self.card_cache[sid] = candidate_data
-            found[sid] = ListingCandidate(
-                sid,
-                public_url,
-                parsed.get("text", title),
-            )
+                if price is None or price > 400:
+                    continue
 
-    self.discovery_stats["unique_candidates"] = len(found)
-    print(
-        "[HALO DISCOVERY] "
-        f"pages={self.discovery_stats['pages_requested']} "
-        f"links={self.discovery_stats['links_seen']} "
-        f"cards={self.discovery_stats['cards_parsed']} "
-        f"price<=400={self.discovery_stats['under_price']} "
-        f"unique={self.discovery_stats['unique_candidates']}"
-    )
-    return list(found.values())
+                under_price += 1
+
+                sms_url = urljoin(self.base_url, href)
+                public_url = self._normal_public_url(sms_url)
+                images = self._halo_images(card)
+
+                record = {
+                    **data,
+                    "title": title,
+                    "sms_url": sms_url,
+                    "public_url": public_url,
+                    "images": images,
+                }
+
+                old = self.card_cache.get(sid)
+
+                if old:
+                    old_score = (
+                        len(old.get("images") or []),
+                        bool(old.get("address")),
+                        len(old.get("text") or ""),
+                    )
+                    new_score = (
+                        len(images),
+                        bool(data.get("address")),
+                        len(data.get("text") or ""),
+                    )
+                    if new_score > old_score:
+                        self.card_cache[sid] = record
+                    continue
+
+                self.card_cache[sid] = record
+
+                found[sid] = ListingCandidate(
+                    sid,
+                    public_url,
+                    data.get("text", title),
+                )
+
+        self.discovery_stats = {
+            "pages": pages_ok,
+            "raw_ids": raw_id_matches,
+            "links": links_seen,
+            "cards": cards_parsed,
+            "under_price": under_price,
+            "unique": len(found),
+        }
+
+        print(
+            "[HALO DISCOVERY] "
+            f"pages={pages_ok} raw_ids={raw_id_matches} "
+            f"links={links_seen} cards={cards_parsed} "
+            f"price<=400={under_price} unique={len(found)}"
+        )
+
+        return list(found.values())
 
     def _detail_images(self, sms_url: str) -> list[str]:
-        """
-        Pokušaj da sa javnog smsprint detalja izvučemo sve Halo slike.
-        Ako taj prikaz daje samo naslovnu sliku, kartična slika ostaje fallback.
-        """
         try:
             time.sleep(self.delay_seconds)
             html = self._get(sms_url)
@@ -843,22 +842,22 @@ def get_latest_candidates(self):
             return None
 
         images = list(card.get("images") or [])
-
-        # Javna detail stranica ne vraća 403; pokušaj da proširimo galeriju.
         detail_images = self._detail_images(card["sms_url"])
+
         seen = set(images)
+
         for url in detail_images:
             if url not in seen:
                 seen.add(url)
                 images.append(url)
 
-        # Korisnik je eksplicitno tražio da oglasi bez fotografija ne ulaze.
         if not images:
             return None
 
         text = card.get("text", "")
-        furnished = None
         low = text.lower()
+
+        furnished = None
         if "namešten" in low or "namesten" in low:
             furnished = True
         if "nenamešten" in low or "nenamesten" in low:
@@ -870,9 +869,6 @@ def get_latest_candidates(self):
                 heating = label
                 break
 
-        # smsprint lista već daje dovoljno podataka. Koordinate obično nisu
-        # javne, pa će zajednički cached Nominatim fallback iz main.py
-        # geokodirati ulicu + naselje veoma ograničenom brzinom.
         return Listing(
             source=self.source,
             source_id=c.source_id,
@@ -892,25 +888,25 @@ def get_latest_candidates(self):
         )
 
     def check_active(self, url: str, source_id: str) -> bool | None:
-        """
-        Provera preko javnog smsprint URL-a, ne preko 403 desktop hosta.
-        """
         sms_url = self._sms_url(url)
         time.sleep(self.delay_seconds)
 
         try:
-            r = self._request(sms_url, allow_status=True)
+            response = self._request(sms_url, allow_status=True)
         except requests.RequestException:
             return None
 
-        if r.status_code in (404, 410):
+        if response.status_code in (404, 410):
             return False
-        if r.status_code in (403, 429) or r.status_code >= 500:
-            return None
-        if r.status_code != 200:
+
+        if response.status_code in (403, 429) or response.status_code >= 500:
             return None
 
-        low = r.text.lower()
+        if response.status_code != 200:
+            return None
+
+        low = response.text.lower()
+
         inactive = (
             "oglas nije aktivan",
             "oglas više nije aktivan",
@@ -918,12 +914,11 @@ def get_latest_candidates(self):
             "oglas je istekao",
             "oglas nije dostupan",
         )
+
         if any(x in low for x in inactive):
             return False
 
-        # Ako se ID oglasa i dalje nalazi u URL-u/finalnoj stranici,
-        # tretiramo ga kao aktivan. U nejasnom slučaju ne brišemo.
-        if source_id in r.url or source_id in r.text:
+        if source_id in response.url or source_id in response.text:
             return True
 
         return None
