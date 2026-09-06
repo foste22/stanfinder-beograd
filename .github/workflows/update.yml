@@ -1,6 +1,8 @@
 name: Update StanFinder
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "7,22,37,52 * * * *"
@@ -41,7 +43,7 @@ jobs:
           restore-keys: |
             belgrade-gtfs-${{ runner.os }}-
 
-      - name: Scan latest listings and calculate public transport
+      - name: Scan listings, galleries and public transport
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
