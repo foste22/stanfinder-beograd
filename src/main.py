@@ -266,12 +266,33 @@ def main():
     # ------------------------------------------------------------
     geocoder = CachedNominatimGeocoder(
         state["geocode_cache"],
-        max_new_requests=int(cfg.get("geocoding", {}).get("max_new_requests_per_run", 4)),
+        max_new_requests=int(cfg.get("geocoding", {}).get("max_new_requests_per_run", 16)),
         min_interval_seconds=float(cfg.get("geocoding", {}).get("min_interval_seconds", 16)),
     )
 
+    # Halo trenutno ima najveću i najkorisniju ponudu za ovaj projekat.
+    # Ranije smo greškom dozvoljavali samo 4 NOVA geocoding zahteva po celom
+    # run-u. Sada poštujemo stvarno pravilo: do 4/min, sa 16 s razmaka,
+    # ali možemo da obradimo više adresa tokom jednog run-a.
+    #
+    # Prednost dajemo Halo oglasima dok se početni backlog ne napuni.
+    geocode_priority = {
+        "halo_oglasi": 0,
+        "nekretnine_rs": 1,
+        "oglasi_rs": 2,
+        "4zida": 3,
+    }
+
+    ordered_parsed = sorted(
+        parsed,
+        key=lambda x: (
+            0 if (x.lat is None or x.lon is None) else 1,
+            geocode_priority.get(x.source, 9),
+        ),
+    )
+
     routable = []
-    for item in parsed:
+    for item in ordered_parsed:
         key = listing_key(item.source, item.source_id)
 
         if item.lat is None or item.lon is None:
@@ -282,7 +303,7 @@ def main():
                 item.approximate_location = True
 
         if item.lat is None or item.lon is None:
-            # Keep retryable: another run can use cached/geocoding quota.
+            # Retryable: sledeći run nastavlja od keša / sledećeg quota mesta.
             state["seen"][key] = {
                 "status": "missing_map_coordinates",
                 "seen_at": now_iso,

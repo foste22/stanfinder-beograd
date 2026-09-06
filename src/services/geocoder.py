@@ -13,12 +13,12 @@ class CachedNominatimGeocoder:
     - no repeated geocoding of the same query;
     - recurring scripts: stay at or below 4 requests/minute.
 
-    We therefore use a 16 second minimum interval and max 4 NEW requests/run.
+    We therefore use a 16 second minimum interval and a configurable number of NEW requests/run.
     """
 
     URL = "https://nominatim.openstreetmap.org/search"
 
-    def __init__(self, cache: dict, max_new_requests: int = 4, min_interval_seconds: float = 16.0):
+    def __init__(self, cache: dict, max_new_requests: int = 16, min_interval_seconds: float = 16.0):
         self.cache = cache
         self.max_new_requests = max_new_requests
         self.min_interval_seconds = min_interval_seconds
