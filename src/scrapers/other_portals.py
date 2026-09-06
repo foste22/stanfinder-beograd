@@ -34,6 +34,7 @@ class Listing:
     lon: float | None
     approximate_location: bool
     images: list[str]
+    expected_image_count: int | None = None
 
 
 class BasePortalScraper:
@@ -153,8 +154,36 @@ class BasePortalScraper:
         return result
 
     @staticmethod
-    def _images(soup: BeautifulSoup, allowed_hosts: tuple[str, ...]) -> list[str]:
+    def _expected_photo_count(text: str) -> int | None:
+        patterns = [
+            r"(\d+)\s*(?:fotografija|fotografije|fotografija|slika|slike)\b",
+            r"(?:broj\s+fotografija|fotografija)\s*:?\s*(\d+)",
+        ]
+        for pattern in patterns:
+            m = re.search(pattern, text or "", re.I)
+            if m:
+                try:
+                    value = int(m.group(1))
+                    if 1 <= value <= 100:
+                        return value
+                except Exception:
+                    pass
+        return None
+
+    @staticmethod
+    def _images(
+        soup: BeautifulSoup,
+        allowed_hosts: tuple[str, ...],
+        html: str | None = None,
+    ) -> list[str]:
+        """
+        Extract image URLs from normal DOM + JSON-LD + script/raw HTML.
+
+        A number of property portals only render the first photo immediately,
+        while the remaining gallery URLs live in embedded JSON/JS state.
+        """
         candidates = []
+
         for selector, attr in [
             ('meta[property="og:image"]', "content"),
             ('meta[property="og:image:secure_url"]', "content"),
@@ -167,9 +196,16 @@ class BasePortalScraper:
         candidates.extend(BasePortalScraper._jsonld_images(soup))
 
         for img in soup.find_all("img"):
-            for attr in ("src", "data-src", "data-original", "data-lazy-src"):
+            for attr in (
+                "src",
+                "data-src",
+                "data-original",
+                "data-lazy-src",
+                "data-image",
+            ):
                 if img.get(attr):
                     candidates.append(img.get(attr))
+
             srcset = img.get("srcset")
             if srcset:
                 candidates.extend(
@@ -178,25 +214,79 @@ class BasePortalScraper:
                     if part.strip()
                 )
 
+        # Embedded application state / scripts.
+        if html:
+            decoded = (
+                html.replace("\\u002F", "/")
+                    .replace("\\/", "/")
+                    .replace("&amp;", "&")
+            )
+
+            # Absolute URLs.
+            candidates.extend(
+                re.findall(
+                    r'https?://[^\s"\'<>\\]+',
+                    decoded,
+                    flags=re.I,
+                )
+            )
+
+            # Protocol-relative image URLs.
+            candidates.extend(
+                "https:" + x
+                for x in re.findall(
+                    r'//[A-Za-z0-9._-]+/[^\s"\'<>\\]+',
+                    decoded,
+                    flags=re.I,
+                )
+            )
+
         out, seen = [], set()
+
         for raw in candidates:
             if not raw:
                 continue
-            url = urljoin("https://example.invalid", str(raw).strip())
+
+            value = str(raw).strip().strip('"\'')
+            if not value:
+                continue
+
+            # Generic DOM-relative URLs cannot be resolved safely here;
+            # portal scrapers normally expose absolute CDN URLs.
+            url = urljoin("https://example.invalid", value)
             p = urlparse(url)
             host = p.netloc.lower()
-            if not any(host == h or host.endswith("." + h) for h in allowed_hosts):
+
+            if not any(
+                host == h or host.endswith("." + h)
+                for h in allowed_hosts
+            ):
                 continue
-            low = p.path.lower()
-            if not re.search(r"\.(?:jpe?g|png|webp)(?:$|/)", low):
+
+            low = (p.path + "?" + p.query).lower()
+            if any(x in low for x in (
+                "logo", "avatar", "icon", "sprite",
+                "banner", "placeholder", "favicon",
+            )):
                 continue
-            if any(x in low for x in ("logo", "avatar", "icon", "banner", "placeholder")):
+
+            # Normal image extension OR well-known image/CDN path.
+            looks_image = bool(
+                re.search(r"\.(?:jpe?g|png|webp)(?:$|[/?#])", low)
+                or "/image" in low
+                or "/images/" in low
+                or "/photo" in low
+                or "/photos/" in low
+            )
+            if not looks_image:
                 continue
+
             clean = p._replace(fragment="").geturl()
             if clean not in seen:
                 seen.add(clean)
                 out.append(clean)
-        return out[:40]
+
+        return out[:60]
 
     def check_active(self, url: str, source_id: str) -> bool | None:
         time.sleep(self.delay_seconds)
@@ -369,7 +459,7 @@ class NekretnineRSScraper(BasePortalScraper):
 
         address = address or neighborhood or title
 
-        images = self._images(soup, ("pic.nekretnine.rs", "nekretnine.rs"))
+        images = self._images(soup, ("pic.nekretnine.rs", "nekretnine.rs"), html)
         lat, lon = self._coords(soup, html)
 
         furnished = True if re.search(r"Namešteno\s+Da|Namešten", text, re.I) else None
@@ -389,7 +479,22 @@ class NekretnineRSScraper(BasePortalScraper):
             area_m2=self._area(text), rooms=rooms, furnished=furnished,
             heating=heating, lat=lat, lon=lon, approximate_location=(lat is None),
             images=images,
+            expected_image_count=self._expected_photo_count(text),
         )
+
+    def refresh_existing(self, url: str, source_id: str) -> dict:
+        time.sleep(self.delay_seconds)
+        html = self._get(url)
+        soup = BeautifulSoup(html, "html.parser")
+        text = "\n".join(soup.stripped_strings)
+        return {
+            "images": self._images(
+                soup,
+                ("pic.nekretnine.rs", "nekretnine.rs"),
+                html,
+            ),
+            "expected_image_count": self._expected_photo_count(text),
+        }
 
 
 class OglasiRSScraper(BasePortalScraper):
@@ -433,7 +538,7 @@ class OglasiRSScraper(BasePortalScraper):
         if m:
             address = m.group(1).strip(" |")
 
-        images = self._images(soup, ("media.oglasi.rs", "oglasi.rs"))
+        images = self._images(soup, ("media.oglasi.rs", "oglasi.rs"), html)
         lat, lon = self._coords(soup, html)
 
         rooms = None
@@ -461,7 +566,22 @@ class OglasiRSScraper(BasePortalScraper):
             area_m2=self._area(text), rooms=rooms, furnished=furnished,
             heating=heating, lat=lat, lon=lon, approximate_location=(lat is None),
             images=images,
+            expected_image_count=self._expected_photo_count(text),
         )
+
+    def refresh_existing(self, url: str, source_id: str) -> dict:
+        time.sleep(self.delay_seconds)
+        html = self._get(url)
+        soup = BeautifulSoup(html, "html.parser")
+        text = "\n".join(soup.stripped_strings)
+        return {
+            "images": self._images(
+                soup,
+                ("media.oglasi.rs", "oglasi.rs"),
+                html,
+            ),
+            "expected_image_count": self._expected_photo_count(text),
+        }
 
 
 class HaloOglasiScraper(BasePortalScraper):
@@ -533,7 +653,7 @@ class HaloOglasiScraper(BasePortalScraper):
         return pages
 
     @staticmethod
-    def _halo_images(node) -> list[str]:
+    def _halo_images(node, html: str | None = None) -> list[str]:
         candidates = []
 
         for img in node.find_all("img"):
@@ -556,36 +676,66 @@ class HaloOglasiScraper(BasePortalScraper):
                     if x.strip()
                 )
 
+        if html:
+            decoded = (
+                html.replace("\\u002F", "/")
+                    .replace("\\/", "/")
+                    .replace("&amp;", "&")
+            )
+            candidates.extend(
+                re.findall(
+                    r'https?://[^\s"\'<>\\]+',
+                    decoded,
+                    flags=re.I,
+                )
+            )
+            candidates.extend(
+                "https:" + x
+                for x in re.findall(
+                    r'//[A-Za-z0-9._-]*halooglasi\.com/[^\s"\'<>\\]+',
+                    decoded,
+                    flags=re.I,
+                )
+            )
+
         result, seen = [], set()
 
         for raw in candidates:
-            url = urljoin(
-                "https://smsprint.halooglasi.com",
-                str(raw).strip(),
-            )
-            parsed = urlparse(url)
-            host = parsed.netloc.lower()
-
-            if not (
-                host == "img.halooglasi.com"
-                or host.endswith(".img.halooglasi.com")
-                or host.endswith("halooglasi.com")
-            ):
+            if not raw:
                 continue
 
-            low = url.lower()
+            url = urljoin(
+                "https://smsprint.halooglasi.com",
+                str(raw).strip().strip('"\''),
+            )
+            p = urlparse(url)
+            host = p.netloc.lower()
+
+            if "halooglasi.com" not in host:
+                continue
+
+            low = (p.path + "?" + p.query).lower()
             if any(x in low for x in (
                 "logo", "avatar", "icon", "sprite", "banner",
-                "googletagmanager", "placeholder",
+                "googletagmanager", "placeholder", "favicon",
             )):
                 continue
 
-            clean = parsed._replace(fragment="").geturl()
+            looks_image = bool(
+                re.search(r"\.(?:jpe?g|png|webp)(?:$|[/?#])", low)
+                or "img.halooglasi.com" in host
+                or "/image" in low
+                or "/photo" in low
+            )
+            if not looks_image:
+                continue
+
+            clean = p._replace(fragment="").geturl()
             if clean not in seen:
                 seen.add(clean)
                 result.append(clean)
 
-        return result[:40]
+        return result[:60]
 
     @staticmethod
     def _candidate_card(anchor):
@@ -691,6 +841,7 @@ class HaloOglasiScraper(BasePortalScraper):
             "address": address,
             "municipality": municipality,
             "text": joined,
+            "expected_image_count": BasePortalScraper._expected_photo_count(joined),
         }
 
     def get_latest_candidates(self):
@@ -831,7 +982,7 @@ class HaloOglasiScraper(BasePortalScraper):
             time.sleep(self.delay_seconds)
             html = self._get(sms_url)
             soup = BeautifulSoup(html, "html.parser")
-            return self._halo_images(soup)
+            return self._halo_images(soup, html)
         except Exception as exc:
             print(f"[WARN] Halo galerija nije pročitana: {exc}")
             return []
@@ -885,7 +1036,22 @@ class HaloOglasiScraper(BasePortalScraper):
             lon=None,
             approximate_location=True,
             images=images,
+            expected_image_count=card.get("expected_image_count"),
         )
+
+    def refresh_existing(self, url: str, source_id: str) -> dict:
+        sms_url = self._sms_url(url)
+        time.sleep(self.delay_seconds)
+        html = self._get(sms_url)
+        soup = BeautifulSoup(html, "html.parser")
+        text = "\n".join(soup.stripped_strings)
+        return {
+            "images": self._halo_images(soup, html),
+            "expected_image_count": (
+                self._expected_photo_count(text)
+                or self.card_cache.get(source_id, {}).get("expected_image_count")
+            ),
+        }
 
     def check_active(self, url: str, source_id: str) -> bool | None:
         sms_url = self._sms_url(url)

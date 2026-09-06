@@ -66,3 +66,21 @@ geocoding:
 notifications:
   telegram:
     enabled: false
+
+maintenance:
+  # Stari prihvaćeni oglasi se NE parsiraju/geokodiraju/rutiraju ponovo.
+  # Samo povremeno proveravamo da li su još aktivni.
+  active_check_interval_hours: 6
+  active_check_batch_size: 12
+
+  # Nepotpune galerije (0/1 slika ili manje od broja koji portal navodi)
+  # osvežavaju se odvojeno od glavnog pipeline-a.
+  gallery_refresh_interval_hours: 6
+  gallery_refresh_batch_size: 8
+
+  # Neispravne/nedovršene oglase ne pokušavamo ponovo svakih 15 min.
+  retry_no_photos_hours: 12
+  retry_missing_coords_hours: 4
+  retry_parse_failed_hours: 6
+  retry_route_missing_hours: 6
+  retry_inactive_hours: 24
