@@ -470,7 +470,7 @@ class HaloOglasiScraper(BasePortalScraper):
         "trosoban",
     )
 
-    def __init__(self, search_url: str, delay_seconds: float = 1.5):
+    def __init__(self, search_url: str, delay_seconds: float = 1.5, pages_per_category: int = 4):
         # Čak i ako stari config slučajno sadrži www host, prebaci na javni
         # smsprint prikaz.
         search_url = search_url.replace(
@@ -478,7 +478,15 @@ class HaloOglasiScraper(BasePortalScraper):
             "https://smsprint.halooglasi.com",
         )
         super().__init__(search_url, delay_seconds)
+        self.pages_per_category = max(1, int(pages_per_category))
         self.card_cache: dict[str, dict] = {}
+        self.discovery_stats = {
+            "pages_requested": 0,
+            "links_seen": 0,
+            "cards_parsed": 0,
+            "under_price": 0,
+            "unique_candidates": 0,
+        }
 
     @staticmethod
     def _normal_public_url(url: str) -> str:
@@ -665,71 +673,155 @@ class HaloOglasiScraper(BasePortalScraper):
             "text": joined,
         }
 
-    def _structure_urls(self) -> list[str]:
-        root = self.search_url.rstrip("/")
-        # Ako je u config-u već /beograd, samo dodaj strukturu.
-        return [f"{root}/{s}" for s in self.STRUCTURES]
+@staticmethod
+def _with_page(url: str, page: int) -> str:
+    parts = urlsplit(url)
+    params = dict(parse_qsl(parts.query, keep_blank_values=True))
+    if page <= 1:
+        params.pop("page", None)
+    else:
+        params["page"] = str(page)
+    return urlunsplit((
+        parts.scheme,
+        parts.netloc,
+        parts.path,
+        urlencode(params),
+        parts.fragment,
+    ))
 
-    def get_latest_candidates(self):
-        found: dict[str, ListingCandidate] = {}
-        self.card_cache = {}
+def _listing_pages(self) -> list[str]:
+    """
+    Čitamo:
+    - opštu Beograd stranicu;
+    - svaku relevantnu sobnost;
+    - više stranica svake liste.
 
-        for i, page_url in enumerate(self._structure_urls()):
-            if i:
-                time.sleep(self.delay_seconds)
+    Halo raspoređuje premium i standard oglase tako da jeftin oglas
+    često nije na prvoj strani. Deduplikacija po ID-u sprečava duplikate.
+    """
+    root = self.search_url.rstrip("/")
+    bases = [root] + [f"{root}/{s}" for s in self.STRUCTURES]
+    pages = []
+    for base in bases:
+        for page in range(1, self.pages_per_category + 1):
+            pages.append(self._with_page(base, page))
+    return pages
 
+def get_latest_candidates(self):
+    found: dict[str, ListingCandidate] = {}
+    self.card_cache = {}
+    self.discovery_stats = {
+        "pages_requested": 0,
+        "links_seen": 0,
+        "cards_parsed": 0,
+        "under_price": 0,
+        "unique_candidates": 0,
+    }
+
+    for i, page_url in enumerate(self._listing_pages()):
+        if i:
+            time.sleep(self.delay_seconds)
+
+        try:
             html = self._get(page_url)
-            soup = BeautifulSoup(html, "html.parser")
+        except Exception as exc:
+            # Jedna prazna/nepostojeća stranica ne sme da obori ceo Halo.
+            print(f"[WARN] Halo list page {page_url}: {exc}")
+            continue
 
-            for a in soup.find_all("a", href=True):
-                href = a.get("href", "")
+        self.discovery_stats["pages_requested"] += 1
+        soup = BeautifulSoup(html, "html.parser")
 
-                if "/nekretnine/izdavanje-stanova/" not in href:
-                    continue
+        page_ids = set()
 
-                m = re.search(r"/(\d{10,})(?:\?|$)", href)
-                if not m:
-                    continue
+        for a in soup.find_all("a", href=True):
+            href = a.get("href", "")
 
-                sid = m.group(1)
-                title = " ".join(a.stripped_strings).strip()
-                if not title:
-                    continue
+            if "/nekretnine/izdavanje-stanova/" not in href:
+                continue
 
-                card = self._candidate_card(a)
-                if card is None:
-                    continue
+            m = re.search(r"/(\d{10,})(?:/?(?:\?|$))", href)
+            if not m:
+                continue
 
-                parsed = self._parse_card_lines(card, title)
-                price = parsed.get("price_eur")
+            self.discovery_stats["links_seen"] += 1
+            sid = m.group(1)
 
-                # Štedimo zahteve: oglasi preko našeg limita nas uopšte
-                # ne zanimaju.
-                if price is None or price > 400:
-                    continue
+            # Isti oglas može imati naslov + sliku kao dva linka.
+            if sid in page_ids:
+                continue
+            page_ids.add(sid)
 
-                sms_url = urljoin(self.base_url, href)
-                public_url = self._normal_public_url(sms_url)
-                card_images = self._halo_images(card)
+            title = " ".join(a.stripped_strings).strip()
+            if not title:
+                # Pokušaj naslov iz kartice ako je kliknuta slika.
+                title = ""
 
-                self.card_cache[sid] = {
-                    **parsed,
-                    "title": title,
-                    "sms_url": sms_url,
-                    "public_url": public_url,
-                    "images": card_images,
-                }
+            card = self._candidate_card(a)
+            if card is None:
+                continue
 
-                found.setdefault(
-                    sid,
-                    ListingCandidate(
-                        sid,
-                        public_url,
-                        parsed.get("text", title),
-                    ),
-                )
+            if not title:
+                h = card.find(["h1", "h2", "h3", "h4"])
+                if h:
+                    title = " ".join(h.stripped_strings).strip()
 
-        return list(found.values())
+            if not title:
+                # Poslednji fallback: tekst linka iz druge veze u kartici.
+                links = [
+                    " ".join(x.stripped_strings).strip()
+                    for x in card.find_all("a", href=True)
+                ]
+                title = next((x for x in links if len(x) >= 4), f"Halo oglas {sid}")
+
+            parsed = self._parse_card_lines(card, title)
+            self.discovery_stats["cards_parsed"] += 1
+            price = parsed.get("price_eur")
+
+            if price is None or price > 400:
+                continue
+
+            self.discovery_stats["under_price"] += 1
+
+            sms_url = urljoin(self.base_url, href)
+            public_url = self._normal_public_url(sms_url)
+            card_images = self._halo_images(card)
+
+            # Ako smo oglas već videli na drugoj kategoriji/strani,
+            # zadrži bogatiji zapis (više slika / preciznija adresa).
+            old = self.card_cache.get(sid)
+            candidate_data = {
+                **parsed,
+                "title": title,
+                "sms_url": sms_url,
+                "public_url": public_url,
+                "images": card_images,
+            }
+
+            if old:
+                old_score = (len(old.get("images") or []), bool(old.get("address")), len(old.get("text") or ""))
+                new_score = (len(card_images), bool(parsed.get("address")), len(parsed.get("text") or ""))
+                if new_score > old_score:
+                    self.card_cache[sid] = candidate_data
+                continue
+
+            self.card_cache[sid] = candidate_data
+            found[sid] = ListingCandidate(
+                sid,
+                public_url,
+                parsed.get("text", title),
+            )
+
+    self.discovery_stats["unique_candidates"] = len(found)
+    print(
+        "[HALO DISCOVERY] "
+        f"pages={self.discovery_stats['pages_requested']} "
+        f"links={self.discovery_stats['links_seen']} "
+        f"cards={self.discovery_stats['cards_parsed']} "
+        f"price<=400={self.discovery_stats['under_price']} "
+        f"unique={self.discovery_stats['unique_candidates']}"
+    )
+    return list(found.values())
 
     def _detail_images(self, sms_url: str) -> list[str]:
         """

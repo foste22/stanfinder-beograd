@@ -46,10 +46,9 @@ sources:
     enabled: true
     # Javni Halo prikaz koji ne vraća 403 kao desktop www verzija.
     search_url: "https://smsprint.halooglasi.com/nekretnine/izdavanje-stanova/beograd"
-    max_new_details_per_run: 24
+    max_new_details_per_run: 60
     request_delay_seconds: 1.5
-    max_new_details_per_run: 8
-    request_delay_seconds: 1.5
+    pages_per_category: 4
 
   oglasi_rs:
     enabled: true
@@ -59,9 +58,9 @@ sources:
 
 geocoding:
   # Public Nominatim policy for recurring scripts: <=4 requests/minute.
-  # 16 novih adresa po run-u, ali i dalje samo jedan zahtev na 16 sekundi.
+  # 24 nove adrese po run-u, ali i dalje samo jedan zahtev na 16 sekundi.
   # To je ~3.75 zahteva/min, a svi rezultati se keširaju.
-  max_new_requests_per_run: 16
+  max_new_requests_per_run: 24
   min_interval_seconds: 16
 
 notifications:

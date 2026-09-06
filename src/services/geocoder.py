@@ -18,7 +18,7 @@ class CachedNominatimGeocoder:
 
     URL = "https://nominatim.openstreetmap.org/search"
 
-    def __init__(self, cache: dict, max_new_requests: int = 16, min_interval_seconds: float = 16.0):
+    def __init__(self, cache: dict, max_new_requests: int = 24, min_interval_seconds: float = 16.0):
         self.cache = cache
         self.max_new_requests = max_new_requests
         self.min_interval_seconds = min_interval_seconds

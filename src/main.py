@@ -75,7 +75,9 @@ def build_scrapers(cfg: dict):
     if sources.get("halo_oglasi", {}).get("enabled"):
         c = sources["halo_oglasi"]
         result["halo_oglasi"] = HaloOglasiScraper(
-            c["search_url"], float(c.get("request_delay_seconds", 1.5))
+            c["search_url"],
+            float(c.get("request_delay_seconds", 1.5)),
+            int(c.get("pages_per_category", 4)),
         )
 
     if sources.get("oglasi_rs", {}).get("enabled"):
@@ -201,6 +203,22 @@ def main():
     # ------------------------------------------------------------
     parsed = []
     source_counts = {}
+    pipeline_stats = {
+        source: {
+            "candidates": 0,
+            "unseen_selected": 0,
+            "parsed_ok": 0,
+            "no_photos": 0,
+            "over_price": 0,
+            "geocoded_or_coords": 0,
+            "missing_coords": 0,
+            "route_insufficient": 0,
+            "over_average": 0,
+            "over_single": 0,
+            "accepted": 0,
+        }
+        for source in scrapers
+    }
     max_price = int(app_cfg["max_price_eur"])
 
     for source, scraper in scrapers.items():
@@ -212,8 +230,10 @@ def main():
         except Exception as exc:
             print(f"[WARN] {source}: search page nije pročitana: {exc}")
             source_counts[source] = {"candidates": 0, "new": 0}
+            pipeline_stats[source]["candidates"] = 0
             continue
 
+        pipeline_stats[source]["candidates"] = len(candidates)
         unseen = []
         for c in candidates:
             key = listing_key(source, c.source_id)
@@ -230,6 +250,7 @@ def main():
 
         unseen = unseen[:max_new]
         source_counts[source] = {"candidates": len(candidates), "new": len(unseen)}
+        pipeline_stats[source]["unseen_selected"] = len(unseen)
 
         for c in unseen:
             key = listing_key(source, c.source_id)
@@ -239,11 +260,15 @@ def main():
                     state["seen"][key] = {"status": "parse_failed", "seen_at": now_iso}
                     continue
 
+                pipeline_stats[source]["parsed_ok"] += 1
+
                 if item.price_eur > max_price:
+                    pipeline_stats[source]["over_price"] += 1
                     state["seen"][key] = {"status": "over_price", "seen_at": now_iso}
                     continue
 
                 if not item.images:
+                    pipeline_stats[source]["no_photos"] += 1
                     state["seen"][key] = {
                         "status": "no_valid_photos",
                         "seen_at": now_iso,
@@ -266,7 +291,7 @@ def main():
     # ------------------------------------------------------------
     geocoder = CachedNominatimGeocoder(
         state["geocode_cache"],
-        max_new_requests=int(cfg.get("geocoding", {}).get("max_new_requests_per_run", 16)),
+        max_new_requests=int(cfg.get("geocoding", {}).get("max_new_requests_per_run", 24)),
         min_interval_seconds=float(cfg.get("geocoding", {}).get("min_interval_seconds", 16)),
     )
 
@@ -303,6 +328,7 @@ def main():
                 item.approximate_location = True
 
         if item.lat is None or item.lon is None:
+            pipeline_stats[item.source]["missing_coords"] += 1
             # Retryable: sledeći run nastavlja od keša / sledećeg quota mesta.
             state["seen"][key] = {
                 "status": "missing_map_coordinates",
@@ -313,6 +339,7 @@ def main():
             }
             continue
 
+        pipeline_stats[item.source]["geocoded_or_coords"] += 1
         routable.append(item)
 
     # ------------------------------------------------------------
@@ -362,6 +389,7 @@ def main():
 
             min_samples = int(app_cfg["min_samples_per_destination"])
             if failed or any(len(per_dest[d]) < min_samples for d in per_dest):
+                pipeline_stats[item.source]["route_insufficient"] += 1
                 state["seen"][key] = {
                     "status": "insufficient_route_data",
                     "seen_at": now_iso,
@@ -377,6 +405,7 @@ def main():
             worst = round(max(all_samples), 1)
 
             if avg > float(app_cfg["max_average_minutes"]):
+                pipeline_stats[item.source]["over_average"] += 1
                 state["seen"][key] = {
                     "status": "over_average_time",
                     "seen_at": now_iso,
@@ -385,6 +414,7 @@ def main():
                 continue
 
             if worst > float(app_cfg["max_single_trip_minutes"]):
+                pipeline_stats[item.source]["over_single"] += 1
                 state["seen"][key] = {
                     "status": "over_single_trip_time",
                     "seen_at": now_iso,
@@ -424,6 +454,7 @@ def main():
             if not any(x.get("id") == key for x in state["listings"]):
                 state["listings"].append(record)
                 accepted_now.append(record)
+                pipeline_stats[item.source]["accepted"] += 1
 
             state["seen"][key] = {
                 "status": "accepted",
@@ -434,6 +465,29 @@ def main():
     state["listings"].sort(
         key=lambda x: (x.get("average_minutes", 999), x.get("price_eur", 9999))
     )
+
+    # Ukupan broj trenutno prikazanih oglasa po izvoru.
+    total_by_source = {}
+    for rec in state["listings"]:
+        src = rec.get("source", "?")
+        total_by_source[src] = total_by_source.get(src, 0) + 1
+
+    print("\n========== PIPELINE DIAGNOSTIKA ==========")
+    for src, stats in pipeline_stats.items():
+        print(
+            f"[{src}] candidates={stats['candidates']} "
+            f"selected={stats['unseen_selected']} "
+            f"parsed={stats['parsed_ok']} "
+            f"no_photos={stats['no_photos']} "
+            f"coords={stats['geocoded_or_coords']} "
+            f"missing_coords={stats['missing_coords']} "
+            f"route_missing={stats['route_insufficient']} "
+            f"avg>limit={stats['over_average']} "
+            f"worst>limit={stats['over_single']} "
+            f"accepted_now={stats['accepted']} "
+            f"TOTAL_ON_SITE={total_by_source.get(src, 0)}"
+        )
+    print("==========================================\n")
 
     save_state(state)
     save_public(
@@ -446,6 +500,8 @@ def main():
             "accepted_count": len(state["listings"]),
             "new_accepted_this_run": len(accepted_now),
             "sources": list(scrapers.keys()),
+            "pipeline_stats": pipeline_stats,
+            "total_by_source": total_by_source,
             "routing_method": "Official Belgrade GTFS; schedule-based, no live traffic",
         },
         destinations=destinations,
