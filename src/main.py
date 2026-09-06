@@ -95,8 +95,6 @@ def main() -> None:
                 continue
 
             if item.lat is None or item.lon is None:
-                # Ne izmišljamo lokaciju. Sledeće pokretanje može ponovo probati
-                # ako se parser bude unapredio; trenutno beležimo status.
                 state["seen"][key] = {
                     "status": "missing_map_coordinates",
                     "seen_at": now_iso,
@@ -190,6 +188,7 @@ def main() -> None:
                 "source_id": item.source_id,
                 "title": item.title,
                 "url": item.url,
+                "image_url": item.image_url,
                 "price_eur": item.price_eur,
                 "address": item.address,
                 "formatted_address": item.address,
@@ -217,6 +216,9 @@ def main() -> None:
                 state["listings"].append(record)
                 accepted_now.append(record)
             else:
+                # Sačuvaj prvobitni datum ako je oglas već postojao.
+                old = state["listings"][existing_index]
+                record["first_seen_at"] = old.get("first_seen_at", now_iso)
                 state["listings"][existing_index] = record
 
             state["seen"][key] = {
@@ -224,6 +226,29 @@ def main() -> None:
                 "seen_at": now_iso,
                 "average_minutes": overall_avg,
             }
+
+    # Dopuni slike za ranije sačuvane 4zida oglase koji su nastali pre
+    # uvođenja prikaza fotografija. Ograničenje čuva sajt od previše zahteva.
+    backfilled = 0
+    for record in state["listings"]:
+        if backfilled >= 12:
+            break
+        if record.get("source") != "4zida" or record.get("image_url"):
+            continue
+        url = record.get("url")
+        if not url:
+            continue
+        try:
+            image_url = scraper.get_primary_image_url(url)
+            if image_url:
+                record["image_url"] = image_url
+            else:
+                # Prazan string znači da je pokušano; budući parser i dalje
+                # može kasnije da se promeni ako bude potrebno.
+                record["image_url"] = ""
+            backfilled += 1
+        except Exception as exc:
+            print(f"[WARN] Slika nije dopunjena za {url}: {exc}")
 
     state["listings"].sort(
         key=lambda x: (x.get("average_minutes", 999), x.get("price_eur", 9999))
@@ -254,7 +279,7 @@ def main() -> None:
     print(
         f"Gotovo. Kandidati={len(candidates)}, novi={len(unseen)}, "
         f"za rute={len(parsed)}, prihvaćeni sada={len(accepted_now)}, "
-        f"ukupno prihvaćeni={len(state['listings'])}"
+        f"slike dopunjene={backfilled}, ukupno prihvaćeni={len(state['listings'])}"
     )
 
 

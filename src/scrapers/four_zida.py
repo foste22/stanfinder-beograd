@@ -36,6 +36,7 @@ class Listing:
     lat: float | None
     lon: float | None
     approximate_location: bool
+    image_url: str | None
 
 
 class FourZidaScraper:
@@ -153,17 +154,11 @@ class FourZidaScraper:
 
     @classmethod
     def _extract_coordinates(cls, soup: BeautifulSoup, html: str) -> tuple[float | None, float | None]:
-        """
-        4zida detalji oglasa imaju prikaz na mapi. Struktura stranice se može
-        promeniti, pa pokušavamo više uobičajenih JSON/JS oblika.
-        """
-        # 1) JSON-LD / drugi JSON script blokovi
         for script in soup.find_all("script"):
             raw = script.string or script.get_text("", strip=False)
             if not raw:
                 continue
 
-            # JSON-LD
             if script.get("type") == "application/ld+json":
                 try:
                     obj = json.loads(raw)
@@ -186,15 +181,11 @@ class FourZidaScraper:
                 except Exception:
                     pass
 
-        # 2) Flexible regex patterns for embedded app state
         patterns = [
-            # latitude ... longitude
             r'["\']latitude["\']\s*:\s*["\']?([0-9]{2}\.[0-9]+)["\']?.{0,250}?'
             r'["\']longitude["\']\s*:\s*["\']?([0-9]{2}\.[0-9]+)',
-            # longitude ... latitude
             r'["\']longitude["\']\s*:\s*["\']?([0-9]{2}\.[0-9]+)["\']?.{0,250}?'
             r'["\']latitude["\']\s*:\s*["\']?([0-9]{2}\.[0-9]+)',
-            # lat ... lng/lon
             r'["\']lat["\']\s*:\s*["\']?([0-9]{2}\.[0-9]+)["\']?.{0,250}?'
             r'["\'](?:lng|lon)["\']\s*:\s*["\']?([0-9]{2}\.[0-9]+)',
         ]
@@ -206,22 +197,69 @@ class FourZidaScraper:
                 if cls._valid_belgrade(lat, lon):
                     return lat, lon
 
-        # 3) Poslednji fallback: par koordinata u beogradskom opsegu u blizini map/location tokena
-        for token in ("map", "location", "coordinate", "lokacij"):
-            pos = html.lower().find(token)
-            if pos >= 0:
-                chunk = html[max(0, pos - 5000): pos + 10000]
-                nums = re.findall(r'(?<!\d)(4[4-5]\.\d{4,})(?!\d)|(?<!\d)(2[0-1]\.\d{4,})(?!\d)', chunk)
-                flat = [next(filter(None, x)) for x in nums if any(x)]
-                vals = [float(x) for x in flat]
-                for lat in vals:
-                    if not (44.3 <= lat <= 45.2):
-                        continue
-                    for lon in vals:
-                        if 19.8 <= lon <= 21.2 and cls._valid_belgrade(lat, lon):
-                            return lat, lon
-
         return None, None
+
+    @staticmethod
+    def _normalise_image_url(value: str | None) -> str | None:
+        if not value:
+            return None
+        value = value.strip()
+        if value.startswith("//"):
+            value = "https:" + value
+        if value.startswith("http://"):
+            value = "https://" + value[len("http://"):]
+        if value.startswith("https://"):
+            return value
+        return None
+
+    @classmethod
+    def _extract_primary_image(cls, soup: BeautifulSoup) -> str | None:
+        # Najstabilniji izvor je social-preview slika oglasa.
+        selectors = [
+            ('meta[property="og:image"]', "content"),
+            ('meta[property="og:image:secure_url"]', "content"),
+            ('meta[name="twitter:image"]', "content"),
+            ('meta[name="twitter:image:src"]', "content"),
+        ]
+        for selector, attr in selectors:
+            tag = soup.select_one(selector)
+            if tag:
+                url = cls._normalise_image_url(tag.get(attr))
+                if url and "4zida" in url:
+                    return url
+
+        # Fallback: prva fotografija sa 4zida resizer domena koja ne liči
+        # na avatar, logo ili dekorativnu pozadinu.
+        for img in soup.find_all("img"):
+            alt = (img.get("alt") or "").lower()
+            if any(x in alt for x in ("avatar", "pozadinska", "inspira", "logo")):
+                continue
+
+            candidates = [
+                img.get("src"),
+                img.get("data-src"),
+                img.get("data-lazy-src"),
+            ]
+            srcset = img.get("srcset")
+            if srcset:
+                candidates.extend(
+                    part.strip().split(" ")[0]
+                    for part in srcset.split(",")
+                    if part.strip()
+                )
+
+            for raw in candidates:
+                url = cls._normalise_image_url(raw)
+                if url and "resizer2.4zida.rs" in url:
+                    return url
+
+        return None
+
+    def get_primary_image_url(self, url: str) -> str | None:
+        time.sleep(self.delay_seconds)
+        html = self._get(url)
+        soup = BeautifulSoup(html, "html.parser")
+        return self._extract_primary_image(soup)
 
     def get_listing(self, candidate: ListingCandidate) -> Listing | None:
         time.sleep(self.delay_seconds)
@@ -250,9 +288,9 @@ class FourZidaScraper:
             furnished = None
 
         lat, lon = self._extract_coordinates(soup, html)
+        image_url = self._extract_primary_image(soup)
 
-        # 4zida često prikazuje približnu, a ne nužno tačnu lokaciju stana.
-        # Zato na dashboardu svaki marker označavamo kao približan.
+        # Portal može namerno da prikazuje približnu lokaciju.
         approximate = True
 
         return Listing(
@@ -269,4 +307,5 @@ class FourZidaScraper:
             lat=lat,
             lon=lon,
             approximate_location=approximate,
+            image_url=image_url,
         )
