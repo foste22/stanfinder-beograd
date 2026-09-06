@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import base64
 import json
 import re
 import time
 from dataclasses import dataclass
-from urllib.parse import urljoin, unquote
+from urllib.parse import urljoin, unquote, urlparse, urlunparse
 
 import requests
 from bs4 import BeautifulSoup
@@ -44,29 +45,27 @@ class FourZidaScraper:
         self.search_url = search_url
         self.delay_seconds = delay_seconds
         self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/152.0 Safari/537.36"
-                ),
-                "Accept-Language": "sr-RS,sr;q=0.9,en;q=0.7",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            }
-        )
+        self.session.headers.update({
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/152.0 Safari/537.36"
+            ),
+            "Accept-Language": "sr-RS,sr;q=0.9,en;q=0.7",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        })
 
     def _request(self, url: str, *, allow_status: bool = False) -> requests.Response:
-        response = self.session.get(url, timeout=30, allow_redirects=True)
+        r = self.session.get(url, timeout=30, allow_redirects=True)
         if not allow_status:
-            response.raise_for_status()
-        return response
+            r.raise_for_status()
+        return r
 
     def _get(self, url: str) -> str:
-        response = self._request(url)
-        if len(response.text) < 1000:
+        r = self._request(url)
+        if len(r.text) < 1000:
             raise RuntimeError(f"Neočekivano kratak odgovor sa {url}")
-        return response.text
+        return r.text
 
     def get_latest_candidates(self) -> list[ListingCandidate]:
         html = self._get(self.search_url)
@@ -77,20 +76,19 @@ class FourZidaScraper:
             href = a.get("href", "")
             if "/izdavanje-stanova/" not in href:
                 continue
-            match = LISTING_ID_RE.search(href)
-            if not match:
+            m = LISTING_ID_RE.search(href)
+            if not m:
                 continue
 
-            source_id = match.group(1).lower()
+            source_id = m.group(1).lower()
             url = urljoin(BASE_URL, href.split("#")[0])
-            search_text = " ".join(a.stripped_strings)
-
-            if "na dan" in search_text.lower():
+            text = " ".join(a.stripped_strings)
+            if "na dan" in text.lower():
                 continue
 
             found.setdefault(
                 source_id,
-                ListingCandidate(source_id=source_id, url=url, search_text=search_text),
+                ListingCandidate(source_id=source_id, url=url, search_text=text),
             )
 
         return list(found.values())
@@ -118,24 +116,23 @@ class FourZidaScraper:
 
     @staticmethod
     def _guess_rooms(title: str, text: str) -> str | None:
-        candidates = [
+        names = [
             "Garsonjera", "Jednosoban", "Jednoiposoban", "Dvosoban",
             "Dvoiposoban", "Trosoban", "Troiposoban", "Četvorosoban",
         ]
-        haystack = f"{title} {text}"
-        for c in candidates:
-            if c.lower() in haystack.lower():
-                return c
-        m = re.search(r"\b(\d(?:[.,]5)?)\s+soba\b", haystack, re.I)
+        hay = f"{title} {text}"
+        for name in names:
+            if name.lower() in hay.lower():
+                return name
+        m = re.search(r"\b(\d(?:[.,]5)?)\s+soba\b", hay, re.I)
         return f"{m.group(1).replace(',', '.')} soba" if m else None
 
     @staticmethod
     def _guess_heating(text: str) -> str | None:
-        labels = [
+        for label in [
             "Centralno", "Etažno", "TA peć", "Na gas", "Na struju",
             "Podno", "Norveški radijatori",
-        ]
-        for label in labels:
+        ]:
             if label.lower() in text.lower():
                 return label
         return None
@@ -145,7 +142,7 @@ class FourZidaScraper:
         return 44.3 <= lat <= 45.2 and 19.8 <= lon <= 21.2
 
     @classmethod
-    def _extract_coordinates(cls, soup: BeautifulSoup, html: str) -> tuple[float | None, float | None]:
+    def _extract_coordinates(cls, soup: BeautifulSoup, html: str):
         for script in soup.find_all("script"):
             raw = script.string or script.get_text("", strip=False)
             if not raw:
@@ -180,99 +177,158 @@ class FourZidaScraper:
              r'["\'](?:lng|lon)["\']\s*:\s*["\']?([0-9]{2}\.[0-9]+)', False),
         ]
         for pattern, reverse in patterns:
-            for m in re.finditer(pattern, html, flags=re.I | re.S):
+            for m in re.finditer(pattern, html, re.I | re.S):
                 a, b = float(m.group(1)), float(m.group(2))
                 lat, lon = (b, a) if reverse else (a, b)
                 if cls._valid_belgrade(lat, lon):
                     return lat, lon
         return None, None
 
+    # -----------------------------------------------------------------
+    # FOTOGRAFIJE
+    # -----------------------------------------------------------------
+
     @staticmethod
-    def _clean_image_url(value: str | None) -> str | None:
-        if not value:
+    def _normalise_resizer_url(raw: str | None) -> str | None:
+        if not raw:
             return None
-        value = unquote(value.strip().replace("\\u002F", "/").replace("\\/", "/"))
-        value = value.replace("&amp;", "&")
+
+        value = unquote(str(raw).strip())
+        value = value.replace("\\u002F", "/").replace("\\/", "/").replace("&amp;", "&")
         if value.startswith("//"):
             value = "https:" + value
         if value.startswith("http://"):
             value = "https://" + value[7:]
-        if not value.startswith("https://"):
+
+        try:
+            p = urlparse(value)
+        except Exception:
             return None
-        # Fokus na stvarne 4zida fotografije, ne ikonice i spoljne reklame.
-        if "resizer2.4zida.rs" not in value and "4zida.rs" not in value:
+
+        # Samo CDN koji služi fotografije oglasa.
+        if p.scheme != "https" or p.netloc.lower() != "resizer2.4zida.rs":
             return None
+
+        # Fragmenti #3840/#1920/#640/#256 nisu deo HTTP resursa.
+        p = p._replace(fragment="")
+        value = urlunparse(p)
+
+        # Isključi sve što nije image format.
+        path_low = p.path.lower()
+        if not re.search(r"\.(?:jpe?g|png|webp)(?:$|\?)", path_low):
+            return None
+
         return value
+
+    @staticmethod
+    def _original_photo_key(url: str) -> str | None:
+        """
+        4zida resizer URL ima oblik:
+        .../rs:fit:1920:1080:0/<base64>.webp
+
+        Base64 deo se dekodira npr. u:
+        local:///6a9a.../4464bdb383_wm
+
+        Sve resize/format varijante iste fotografije zato dobijaju isti key.
+        """
+        try:
+            p = urlparse(url)
+            last = p.path.rsplit("/", 1)[-1]
+            encoded = last.rsplit(".", 1)[0]
+            padding = "=" * ((4 - len(encoded) % 4) % 4)
+            decoded = base64.urlsafe_b64decode(encoded + padding).decode("utf-8", "ignore")
+
+            # Samo lokalni photo resursi.
+            if not decoded.startswith("local:///"):
+                return None
+
+            key = decoded.split("/")[-1]
+            key = re.sub(r"_wm$", "", key, flags=re.I)
+            key = key.strip()
+            return key.lower() if key else None
+        except Exception:
+            return None
+
+    @staticmethod
+    def _quality_score(url: str) -> tuple[int, int, int]:
+        """
+        Biramo jednu najbolju verziju originala.
+        Veća površina je bolja; fit je poželjniji od fill; JPEG dobija
+        malu prednost pri istoj dimenziji zbog jednostavnijeg prikaza.
+        """
+        p = urlparse(url)
+        m = re.search(r"/rs:(fit|fill):(\d+):(\d+):", p.path, re.I)
+        if m:
+            mode = m.group(1).lower()
+            w, h = int(m.group(2)), int(m.group(3))
+        else:
+            mode, w, h = "", 0, 0
+
+        area = w * h
+        mode_bonus = 1 if mode == "fit" else 0
+        jpeg_bonus = 1 if re.search(r"\.jpe?g$", p.path, re.I) else 0
+        return area, mode_bonus, jpeg_bonus
+
+    @classmethod
+    def clean_image_urls(cls, urls: list[str] | None) -> list[str]:
+        best: dict[str, tuple[tuple[int, int, int], str]] = {}
+        order: list[str] = []
+
+        for raw in urls or []:
+            url = cls._normalise_resizer_url(raw)
+            if not url:
+                continue
+
+            key = cls._original_photo_key(url)
+            if not key:
+                continue
+
+            score = cls._quality_score(url)
+            if key not in best:
+                best[key] = (score, url)
+                order.append(key)
+            elif score > best[key][0]:
+                best[key] = (score, url)
+
+        # Zadrži redosled originalnih fotografija iz oglasa.
+        return [best[key][1] for key in order if key in best]
 
     @classmethod
     def _extract_images(cls, soup: BeautifulSoup, html: str) -> list[str]:
-        raw_urls: list[str] = []
+        candidates: list[str] = []
 
-        # Meta preview obično sadrži jednu od glavnih fotografija.
-        for selector, attr in [
-            ('meta[property="og:image"]', "content"),
-            ('meta[property="og:image:secure_url"]', "content"),
-            ('meta[name="twitter:image"]', "content"),
-        ]:
-            for tag in soup.select(selector):
-                if tag.get(attr):
-                    raw_urls.append(tag.get(attr))
-
-        # Sve slike koje su direktno renderovane u galeriji.
+        # Ono što browser stvarno renderuje.
         for img in soup.find_all("img"):
-            alt = (img.get("alt") or "").lower()
-            if any(x in alt for x in ("avatar", "logo", "pozadinska", "reklam", "inspiracija")):
-                continue
             for attr in ("src", "data-src", "data-lazy-src", "data-original"):
                 if img.get(attr):
-                    raw_urls.append(img.get(attr))
-            srcset = img.get("srcset")
-            if srcset:
-                raw_urls.extend(
+                    candidates.append(img[attr])
+
+            if img.get("srcset"):
+                candidates.extend(
                     part.strip().split(" ")[0]
-                    for part in srcset.split(",")
+                    for part in img["srcset"].split(",")
                     if part.strip()
                 )
 
-        # React/Next state često sadrži URL-ove galerije i kada slike nisu sve
-        # trenutno ubačene kao <img>.
+        # URL-ovi u Next/React state-u, gde se često nalaze fotografije
+        # koje nisu još renderovane u DOM.
         decoded = html.replace("\\u002F", "/").replace("\\/", "/")
-        raw_urls.extend(
+        candidates.extend(
             re.findall(
-                r'https?://[^\s"\'<>\\]+',
+                r'https?://resizer2\.4zida\.rs/[^\s"\'<>\\]+',
                 decoded,
                 flags=re.I,
             )
         )
 
-        # Deduplikacija. CDN ponekad nudi istu fotografiju u više dimenzija;
-        # biramo URL kako ga portal daje i ograničavamo galeriju na razuman broj.
-        result: list[str] = []
-        seen: set[str] = set()
-        for raw in raw_urls:
-            url = cls._clean_image_url(raw)
-            if not url:
-                continue
+        return cls.clean_image_urls(candidates)
 
-            low = url.lower()
-            if any(x in low for x in ("logo", "avatar", "background", "banner", "icon")):
-                continue
-
-            # ukloni završnu interpunkciju koja ponekad upadne iz JS stringa
-            url = url.rstrip("),;]}")
-
-            if url not in seen:
-                seen.add(url)
-                result.append(url)
-
-        return result[:60]
+    def refresh_gallery(self, url: str) -> list[str]:
+        time.sleep(self.delay_seconds)
+        html = self._get(url)
+        return self._extract_images(BeautifulSoup(html, "html.parser"), html)
 
     def check_active(self, url: str, source_id: str) -> bool | None:
-        """
-        True = oglas je aktivan
-        False = pouzdano je uklonjen / istekao
-        None = privremeni problem, ne diraj oglas
-        """
         time.sleep(self.delay_seconds)
         try:
             r = self._request(url, allow_status=True)
@@ -286,46 +342,22 @@ class FourZidaScraper:
         if r.status_code != 200:
             return None
 
-        final_url = r.url.lower()
-        text = r.text.lower()
-
-        inactive_phrases = [
-            "oglas nije aktivan",
-            "oglas više nije aktivan",
-            "oglas vise nije aktivan",
-            "oglas je istekao",
-            "oglas nije dostupan",
-            "ovaj oglas više nije",
-            "nekretnina više nije dostupna",
-        ]
-        if any(p in text for p in inactive_phrases):
-            return False
-
-        # Ako je detaljni URL preusmeren na potpuno drugu stranicu bez ID-a,
-        # najčešće oglas više ne postoji.
-        if source_id.lower() not in final_url and "/izdavanje-stanova/" not in final_url:
-            return False
-
-        soup = BeautifulSoup(r.text, "html.parser")
-        h1 = soup.find("h1")
-        if not h1:
-            return None
-
-        title = " ".join(h1.stripped_strings).lower()
-        if "za izdavanje" not in title:
-            return None
+        low = r.text.lower()
+        for phrase in [
+            "oglas nije aktivan", "oglas više nije aktivan",
+            "oglas vise nije aktivan", "oglas je istekao",
+            "oglas nije dostupan", "nekretnina više nije dostupna",
+        ]:
+            if phrase in low:
+                return False
 
         return True
-
-    def refresh_gallery(self, url: str) -> list[str]:
-        time.sleep(self.delay_seconds)
-        html = self._get(url)
-        return self._extract_images(BeautifulSoup(html, "html.parser"), html)
 
     def get_listing(self, candidate: ListingCandidate) -> Listing | None:
         time.sleep(self.delay_seconds)
         html = self._get(candidate.url)
         soup = BeautifulSoup(html, "html.parser")
+
         h1 = soup.find("h1")
         if not h1:
             return None
@@ -339,12 +371,11 @@ class FourZidaScraper:
         if "na dan" in candidate.search_text.lower():
             return None
 
-        if "namešteno" in full_text.lower():
-            furnished = True
-        elif "prazno" in full_text.lower():
-            furnished = False
-        else:
-            furnished = None
+        furnished = (
+            True if "namešteno" in full_text.lower()
+            else False if "prazno" in full_text.lower()
+            else None
+        )
 
         lat, lon = self._extract_coordinates(soup, html)
         images = self._extract_images(soup, html)

@@ -72,11 +72,43 @@ def main() -> None:
     now = datetime.now(ZoneInfo(app_cfg["timezone"]))
     now_iso = now.isoformat()
 
-    # ------------------------------------------------------------------
-    # 1. Proveri deo postojećih oglasa da mapa ne ostane puna izdatih stanova.
-    #    Rotirajući cursor znači da se svi aktivni oglasi periodično provere,
-    #    ali ne bombardujemo portal pri svakom pokretanju.
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
+    # 1. OČISTI GALERIJE POSTOJEĆIH OGLASA
+    #    Ako nakon deduplikacije nema nijedne validne fotografije,
+    #    oglas više nije kandidat za StanFinder.
+    # ---------------------------------------------------------------
+    cleaned_existing = []
+    removed_no_photos = 0
+
+    for rec in state["listings"]:
+        if rec.get("source") != "4zida":
+            cleaned_existing.append(rec)
+            continue
+
+        old_images = rec.get("images")
+        if not isinstance(old_images, list):
+            old_images = [rec.get("image_url")] if rec.get("image_url") else []
+
+        images = scraper.clean_image_urls(old_images)
+        rec["images"] = images
+        rec["image_url"] = images[0] if images else ""
+
+        if not images:
+            state["seen"][rec["id"]] = {
+                "status": "no_valid_photos",
+                "seen_at": now_iso,
+                "url": rec.get("url"),
+            }
+            removed_no_photos += 1
+            continue
+
+        cleaned_existing.append(rec)
+
+    state["listings"] = cleaned_existing
+
+    # ---------------------------------------------------------------
+    # 2. ROTIRAJUĆA PROVERA DA LI POSTOJEĆI OGLASI JOŠ POSTOJE
+    # ---------------------------------------------------------------
     existing = state["listings"]
     if existing:
         batch_size = min(10, len(existing))
@@ -89,19 +121,14 @@ def main() -> None:
             if rec.get("source") != "4zida":
                 continue
             try:
-                active = scraper.check_active(
-                    rec.get("url", ""),
-                    rec.get("source_id", ""),
-                )
+                active = scraper.check_active(rec.get("url", ""), rec.get("source_id", ""))
                 if active is False:
-                    key = rec["id"]
-                    print(f"Neaktivan oglas: {rec.get('address')} -> uklanjam sa sajta")
-                    state["seen"][key] = {
+                    state["seen"][rec["id"]] = {
                         "status": "inactive",
                         "seen_at": now_iso,
                         "url": rec.get("url"),
                     }
-                    to_remove.add(key)
+                    to_remove.add(rec["id"])
             except Exception as exc:
                 print(f"[WARN] Provera aktivnosti nije uspela: {exc}")
 
@@ -112,9 +139,9 @@ def main() -> None:
 
         state["active_check_cursor"] = start + batch_size
 
-    # ------------------------------------------------------------------
-    # 2. Novi oglasi
-    # ------------------------------------------------------------------
+    # ---------------------------------------------------------------
+    # 3. NOVI OGLASI
+    # ---------------------------------------------------------------
     candidates = scraper.get_latest_candidates()
     unseen = [
         c for c in candidates
@@ -122,16 +149,31 @@ def main() -> None:
     ][: int(source_cfg.get("max_new_details_per_run", 20))]
 
     parsed = []
+
     for c in unseen:
         key = listing_key("4zida", c.source_id)
+
         try:
             item = scraper.get_listing(c)
             if item is None:
                 state["seen"][key] = {"status": "parse_failed", "seen_at": now_iso}
                 continue
+
+            # Najjeftiniji filter prvi.
             if item.price_eur > int(app_cfg["max_price_eur"]):
                 state["seen"][key] = {"status": "over_price", "seen_at": now_iso}
                 continue
+
+            # NOVI OBAVEZNI FILTER: oglas mora imati bar jednu stvarnu
+            # fotografiju pre nego što trošimo vreme na routing.
+            if not item.images:
+                state["seen"][key] = {
+                    "status": "no_valid_photos",
+                    "seen_at": now_iso,
+                    "url": item.url,
+                }
+                continue
+
             if item.lat is None or item.lon is None:
                 state["seen"][key] = {
                     "status": "missing_map_coordinates",
@@ -140,12 +182,17 @@ def main() -> None:
                     "url": item.url,
                 }
                 continue
+
             parsed.append(item)
+
         except Exception as exc:
             print(f"[WARN] Neuspešno čitanje {c.url}: {exc}")
 
     accepted_now = []
 
+    # ---------------------------------------------------------------
+    # 4. ROUTING SAMO ZA STANOVE KOJI SU PROŠLI CENU + FOTOGRAFIJE
+    # ---------------------------------------------------------------
     if parsed:
         router = GTFSRouter(
             gtfs_path=route_cfg["gtfs_path"],
@@ -158,6 +205,7 @@ def main() -> None:
             max_transfer_walk_m=float(route_cfg.get("max_transfer_walk_m", 350)),
             max_transit_rides=int(route_cfg.get("max_transit_rides", 4)),
         )
+
         sample_times = sample_datetimes(app_cfg["timezone"], route_cfg["sample_times"])
 
         for item in parsed:
@@ -165,7 +213,10 @@ def main() -> None:
             per_dest = {d: [] for d in range(len(destinations))}
             route_failed = False
 
-            print(f"Računam: {item.address} / {item.price_eur} €")
+            print(
+                f"Računam: {item.address} / {item.price_eur} € / "
+                f"{len(item.images)} originalnih fotografija"
+            )
 
             for departure in sample_times:
                 for di, dest in enumerate(destinations):
@@ -179,6 +230,7 @@ def main() -> None:
                         print(f"[WARN] Ruta nije izračunata: {exc}")
                         route_failed = True
                         minutes = None
+
                     if minutes is not None:
                         per_dest[di].append(minutes)
 
@@ -222,7 +274,7 @@ def main() -> None:
                 "title": item.title,
                 "url": item.url,
                 "images": item.images,
-                "image_url": item.images[0] if item.images else "",
+                "image_url": item.images[0],
                 "price_eur": item.price_eur,
                 "address": item.address,
                 "formatted_address": item.address,
@@ -244,32 +296,12 @@ def main() -> None:
 
             state["listings"].append(record)
             accepted_now.append(record)
+
             state["seen"][key] = {
                 "status": "accepted",
                 "seen_at": now_iso,
                 "average_minutes": overall_avg,
             }
-
-    # ------------------------------------------------------------------
-    # 3. Postojećim starim oglasima dopuni CELOKUPNU galeriju.
-    #    Po 6 po run-u, dok svi ne dobiju images polje.
-    # ------------------------------------------------------------------
-    gallery_backfilled = 0
-    for rec in state["listings"]:
-        if gallery_backfilled >= 6:
-            break
-        if rec.get("source") != "4zida":
-            continue
-        if "images" in rec and isinstance(rec.get("images"), list):
-            continue
-
-        try:
-            images = scraper.refresh_gallery(rec["url"])
-            rec["images"] = images
-            rec["image_url"] = images[0] if images else rec.get("image_url", "")
-            gallery_backfilled += 1
-        except Exception as exc:
-            print(f"[WARN] Galerija nije dopunjena: {exc}")
 
     state["listings"].sort(
         key=lambda x: (x.get("average_minutes", 999), x.get("price_eur", 9999))
@@ -285,6 +317,7 @@ def main() -> None:
             "max_single_trip_minutes": app_cfg["max_single_trip_minutes"],
             "accepted_count": len(state["listings"]),
             "new_accepted_this_run": len(accepted_now),
+            "removed_no_photos_this_run": removed_no_photos,
             "routing_method": "Official Belgrade GTFS; schedule-based, no live traffic",
         },
         destinations=destinations,
@@ -298,8 +331,9 @@ def main() -> None:
                 print(f"[WARN] Telegram notifikacija nije poslata: {exc}")
 
     print(
-        f"Gotovo. Novi kandidati={len(unseen)}, prihvaćeni={len(accepted_now)}, "
-        f"galerije dopunjene={gallery_backfilled}, aktivnih na sajtu={len(state['listings'])}"
+        f"Gotovo. Novi kandidati={len(unseen)}, za routing={len(parsed)}, "
+        f"prihvaćeni={len(accepted_now)}, bez fotografija uklonjeno={removed_no_photos}, "
+        f"aktivnih na sajtu={len(state['listings'])}"
     )
 
 
