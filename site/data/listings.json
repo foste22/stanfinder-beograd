@@ -1,11 +1,11 @@
 {
   "meta": {
-    "updated_at": "2026-10-15T06:25:46.182883+02:00",
+    "updated_at": "2026-10-15T11:21:12.149959+02:00",
     "max_price_eur": 400,
     "max_average_minutes": 60,
     "max_single_trip_minutes": 75,
-    "accepted_count": 1103,
-    "new_accepted_this_run": 0,
+    "accepted_count": 1109,
+    "new_accepted_this_run": 6,
     "sources": [
       "4zida",
       "nekretnine_rs",
@@ -15,18 +15,18 @@
     "pipeline_stats": {
       "4zida": {
         "candidates": 20,
-        "known_skipped": 14,
-        "retry_backoff_skipped": 5,
-        "unseen_selected": 1,
-        "parsed_ok": 1,
+        "known_skipped": 12,
+        "retry_backoff_skipped": 4,
+        "unseen_selected": 4,
+        "parsed_ok": 4,
         "no_photos": 0,
         "over_price": 0,
-        "geocoded_or_coords": 0,
+        "geocoded_or_coords": 3,
         "missing_coords": 1,
         "route_insufficient": 0,
         "over_average": 0,
         "over_single": 0,
-        "accepted": 0
+        "accepted": 3
       },
       "nekretnine_rs": {
         "candidates": 0,
@@ -44,30 +44,30 @@
         "accepted": 0
       },
       "halo_oglasi": {
-        "candidates": 111,
-        "known_skipped": 61,
+        "candidates": 109,
+        "known_skipped": 57,
         "retry_backoff_skipped": 8,
-        "unseen_selected": 42,
-        "parsed_ok": 42,
+        "unseen_selected": 44,
+        "parsed_ok": 44,
         "no_photos": 0,
         "over_price": 0,
-        "geocoded_or_coords": 0,
-        "missing_coords": 42,
+        "geocoded_or_coords": 3,
+        "missing_coords": 41,
         "route_insufficient": 0,
         "over_average": 0,
         "over_single": 0,
-        "accepted": 0
+        "accepted": 3
       },
       "oglasi_rs": {
         "candidates": 24,
-        "known_skipped": 2,
+        "known_skipped": 1,
         "retry_backoff_skipped": 20,
-        "unseen_selected": 2,
-        "parsed_ok": 2,
+        "unseen_selected": 3,
+        "parsed_ok": 3,
         "no_photos": 0,
-        "over_price": 1,
+        "over_price": 3,
         "geocoded_or_coords": 0,
-        "missing_coords": 1,
+        "missing_coords": 0,
         "route_insufficient": 0,
         "over_average": 0,
         "over_single": 0,
@@ -75,9 +75,9 @@
       }
     },
     "total_by_source": {
-      "halo_oglasi": 700,
+      "halo_oglasi": 703,
       "oglasi_rs": 80,
-      "4zida": 319,
+      "4zida": 322,
       "nekretnine_rs": 4
     },
     "maintenance": {
@@ -406,7 +406,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-19T20:49:08.615990+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-19T20:49:08.615990+02:00",
       "last_gallery_refresh_at": "2026-09-19T20:49:08.615990+02:00"
     },
@@ -466,7 +466,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T01:35:06.707370+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T01:35:06.707370+02:00",
       "last_gallery_refresh_at": "2026-10-13T01:35:06.707370+02:00"
     },
@@ -1180,7 +1180,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-12T14:48:48.829790+02:00",
       "last_seen_in_search_at": "2026-09-13T19:44:19.154294+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-09-12T14:48:48.829790+02:00"
     },
     {
@@ -1239,7 +1239,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-23T21:53:41.741410+02:00",
       "last_seen_in_search_at": "2026-09-25T08:44:04.048546+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-09-23T21:53:41.741410+02:00"
     },
     {
@@ -1311,8 +1311,71 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-04T18:53:42.161550+02:00",
       "last_seen_in_search_at": "2026-10-11T08:21:04.384027+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-10-04T18:53:42.161550+02:00"
+    },
+    {
+      "id": "4zida:6ad09223800c2a03980ca95a",
+      "source": "4zida",
+      "source_id": "6ad09223800c2a03980ca95a",
+      "title": "Jednoiposoban stan za izdavanje, Pregrevica, 400€, 50m²",
+      "url": "https://www.4zida.rs/izdavanje-stanova/pregrevica-zemun-opstina-beograd/jednoiposoban-stan/6ad09223800c2a03980ca95a",
+      "images": [
+        "https://resizer2.4zida.rs/T7PZvhfPpwhVR68hFp9jXca1Cb8WdLr8cn-HG8RqgVc/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhLzI0NDVhOWRhNTFfd20.jpeg",
+        "https://resizer2.4zida.rs/P4ztQz1QsNKQjEf8acydo76_gcV8fbx6R_G1EiDmiAw/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhL2FjMWQ5NDUwMTdfd20.jpeg",
+        "https://resizer2.4zida.rs/fe3UY11ZGlRSdJrHs4CDhYd0qOFCesyKAnWvZUZHjDU/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhLzExZTlmNTJjZDBfd20.jpeg",
+        "https://resizer2.4zida.rs/wJGolxgiGOywtyFTWk2YntWaGAbdLoVOZw0wisackvI/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhL2M2NTg1YTI0ZTlfd20.jpeg",
+        "https://resizer2.4zida.rs/fIye2UXOhJxD4-X8rsZVKwLMqN_zOhDZRKegarkCLeE/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhL2FhNzdlZDg1ODNfd20.jpeg",
+        "https://resizer2.4zida.rs/8QqDsLyUNqlXWBfuMV3SzXLv3bHr3VwTGZbR-YKe3tE/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhLzg3ODllYjQwZThfd20.jpeg",
+        "https://resizer2.4zida.rs/VJUVD5_E4PmdYnXm9ZnNkEA8PMXJa1Wr9zSS03PT3Ok/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhL2FiZTA3OTFlN2Ffd20.jpeg",
+        "https://resizer2.4zida.rs/MsGY7BgMyIk2OheLHDXwvxWdC_PpkOzAU3xrGzGlbDk/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhL2I0MjUzNTAwMTFfd20.jpeg",
+        "https://resizer2.4zida.rs/kHQn9EV2a3s_Bi6LiFUBU4MLP1cWoJAamdNBLVVRehs/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhLzBkMzQwOGFjODVfd20.jpeg",
+        "https://resizer2.4zida.rs/F-ZHdXYbSrw0Kt26dhq-0YayDRnUiTwUHl1ZGdQq3WE/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhLzM5MWI2NTJiOWNfd20.jpeg"
+      ],
+      "image_url": "https://resizer2.4zida.rs/T7PZvhfPpwhVR68hFp9jXca1Cb8WdLr8cn-HG8RqgVc/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDkyMjM4MDBjMmEwMzk4MGNhOTVhLzI0NDVhOWRhNTFfd20.jpeg",
+      "expected_image_count": null,
+      "price_eur": 400,
+      "address": "Pregrevica",
+      "neighborhood": "Pregrevica",
+      "formatted_address": "Pregrevica",
+      "approximate_location": true,
+      "lat": 44.8590984,
+      "lon": 20.3823162,
+      "area_m2": 50.0,
+      "rooms": "Jednoiposoban",
+      "furnished": true,
+      "heating": "Etažno",
+      "average_minutes": 18.6,
+      "destination_averages": [
+        7.0,
+        30.3
+      ],
+      "worst_sample_minutes": 34.0,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          7.0,
+          7.0,
+          7.0,
+          7.0
+        ],
+        "1": [
+          31.1,
+          32.0,
+          24.1,
+          34.0
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_gallery_refresh_at": "2026-10-15T11:21:12.149959+02:00"
     },
     {
       "id": "halo_oglasi:5425647658900",
@@ -1383,7 +1446,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-10T21:48:35.413923+02:00",
       "last_seen_in_search_at": "2026-09-12T14:48:48.829790+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-09-10T21:48:35.413923+02:00"
     },
     {
@@ -1454,7 +1517,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T13:12:19.722701+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T13:12:19.722701+02:00",
       "last_gallery_refresh_at": "2026-10-13T13:12:19.722701+02:00"
     },
@@ -1513,7 +1576,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-11T20:09:40.175393+02:00",
       "last_seen_in_search_at": "2026-10-12T09:27:39.408512+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-10-11T20:09:40.175393+02:00"
     },
     {
@@ -1570,7 +1633,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-11T21:48:53.083240+02:00",
       "last_seen_in_search_at": "2026-09-14T07:06:28.635752+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-09-11T21:48:53.083240+02:00"
     },
     {
@@ -1629,7 +1692,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-11T20:09:40.175393+02:00",
       "last_seen_in_search_at": "2026-10-12T09:27:39.408512+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-10-11T20:09:40.175393+02:00"
     },
     {
@@ -1688,7 +1751,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-06T23:17:29.674805+02:00",
       "last_seen_in_search_at": "2026-10-07T15:51:54.347183+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-10-06T23:17:29.674805+02:00"
     },
     {
@@ -1760,7 +1823,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-30T21:07:49.364320+02:00",
       "last_seen_in_search_at": "2026-10-02T13:24:05.072199+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-09-30T21:07:49.364320+02:00"
     },
     {
@@ -1832,7 +1895,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-29T15:04:47.991785+02:00",
       "last_seen_in_search_at": "2026-09-30T15:54:47.557059+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-09-29T15:04:47.991785+02:00"
     },
     {
@@ -1904,7 +1967,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-30T00:34:31.831324+02:00",
       "last_seen_in_search_at": "2026-10-07T21:37:02.208501+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-09-30T00:34:31.831324+02:00"
     },
     {
@@ -1976,7 +2039,7 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-08T01:47:49.675388+02:00",
       "last_seen_in_search_at": "2026-10-09T18:31:18.018928+02:00",
-      "last_active_check_at": "2026-10-15T01:52:47.191696+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
       "last_gallery_refresh_at": "2026-10-08T01:47:49.675388+02:00"
     },
     {
@@ -2440,7 +2503,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-01T17:43:20.365547+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-07T21:37:02.208501+02:00",
       "last_gallery_refresh_at": "2026-10-01T17:43:20.365547+02:00"
     },
@@ -2635,7 +2698,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-22T14:51:16.227022+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-22T14:51:16.227022+02:00",
       "last_gallery_refresh_at": "2026-09-22T14:51:16.227022+02:00"
     },
@@ -2843,7 +2906,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-06T23:17:29.674805+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-06T23:17:29.674805+02:00",
       "last_gallery_refresh_at": "2026-10-06T23:17:29.674805+02:00"
     },
@@ -4281,7 +4344,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-17T16:55:45.180356+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-17T16:55:45.180356+02:00",
       "last_gallery_refresh_at": "2026-09-17T16:55:45.180356+02:00"
     },
@@ -5168,7 +5231,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-17T12:05:21.795333+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-17T12:05:21.795333+02:00",
       "last_gallery_refresh_at": "2026-09-17T12:05:21.795333+02:00"
     },
@@ -7398,7 +7461,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-17T16:55:45.180356+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-17T16:55:45.180356+02:00",
       "last_gallery_refresh_at": "2026-09-17T16:55:45.180356+02:00"
     },
@@ -7808,7 +7871,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-20T23:55:39.723351+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-20T23:55:39.723351+02:00",
       "last_gallery_refresh_at": "2026-09-20T23:55:39.723351+02:00"
     },
@@ -8094,7 +8157,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-05T09:44:44.799168+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-05T09:44:44.799168+02:00",
       "last_gallery_refresh_at": "2026-10-05T09:44:44.799168+02:00"
     },
@@ -8347,7 +8410,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-12T18:57:23.754690+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-12T18:57:23.754690+02:00",
       "last_gallery_refresh_at": "2026-10-12T18:57:23.754690+02:00"
     },
@@ -10212,7 +10275,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-12T18:57:23.754690+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-12T18:57:23.754690+02:00",
       "last_gallery_refresh_at": "2026-10-12T18:57:23.754690+02:00"
     },
@@ -12010,6 +12073,76 @@
       "first_seen_at": "2026-09-06T19:19:12.934306+02:00",
       "last_seen_in_search_at": "2026-09-06T21:18:09.253378+02:00",
       "last_active_check_at": "2026-09-13T21:53:20.738032+02:00"
+    },
+    {
+      "id": "halo_oglasi:5425475971004",
+      "source": "halo_oglasi",
+      "source_id": "5425475971004",
+      "title": "Najpovoljnije - Garsonjera 25m2 na dva nivoa",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/najpovoljnije---garsonjera-25m2-na-dva-nivoa/5425475971004?kid=1",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/161008/m/najpovoljnije---garsonjera-25-kvadrata-5425475971004-71781086480.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg",
+        "https://img.halooglasi.com/slike/oglasi/Thumbs/161008/l/najpovoljnije---garsonjera-25-kvadrata-5425475971004-71781086480.jpg",
+        "https://img.halooglasi.com/slike/kategorije/nekretnine-share-image-2.png",
+        "https://img.halooglasi.com",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261008/m/garsonjera-karaburma---spratnost-iv-od-vii-ta-5425647793121-71817262793.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260618/m/odmah-useljiv-5425647296855-71816126888.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261007/m/krnjaca-grge-andrijanovica-26m2-galerija-5425647788375-71817252761.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260805/m/karaburma--0-5-5425647491603-71816610904.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261001/m/kotez-28m2-pr-namesten-5425647758908-71817194260.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260701/m/karaburma-1-0-pere-cetkovica-5425647354843-71816261050.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260917/m/stan-na-karaburmi-5425647690615-71817046586.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/161008/m/najpovoljnije---garsonjera-25-kvadrata-5425475971004-71781086480.jpg",
+      "expected_image_count": null,
+      "price_eur": 280,
+      "address": "Sloga 24",
+      "neighborhood": "Karaburma",
+      "formatted_address": "Sloga 24",
+      "approximate_location": true,
+      "lat": 44.8152638,
+      "lon": 20.4979304,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 31.1,
+      "destination_averages": [
+        39.9,
+        22.4
+      ],
+      "worst_sample_minutes": 41.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          37.8,
+          39.6,
+          41.6,
+          40.6
+        ],
+        "1": [
+          22.4,
+          21.4,
+          24.4,
+          21.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_gallery_refresh_at": "2026-10-15T11:21:12.149959+02:00"
     },
     {
       "id": "halo_oglasi:5425644949558",
@@ -14483,7 +14616,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T19:33:24.287425+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T19:33:24.287425+02:00",
       "last_gallery_refresh_at": "2026-10-14T19:33:24.287425+02:00"
     },
@@ -15634,7 +15767,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-05T09:44:44.799168+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-05T09:44:44.799168+02:00",
       "last_gallery_refresh_at": "2026-10-05T09:44:44.799168+02:00"
     },
@@ -16747,7 +16880,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T22:56:19.218589+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T22:56:19.218589+02:00",
       "last_gallery_refresh_at": "2026-10-14T22:56:19.218589+02:00"
     },
@@ -17366,7 +17499,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-08T12:25:01.900113+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-08T12:25:01.900113+02:00",
       "last_gallery_refresh_at": "2026-10-08T12:25:01.900113+02:00"
     },
@@ -18452,7 +18585,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-07T15:51:54.347183+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-07T15:51:54.347183+02:00",
       "last_gallery_refresh_at": "2026-10-07T15:51:54.347183+02:00"
     },
@@ -18739,7 +18872,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-28T00:19:37.230363+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-28T00:19:37.230363+02:00",
       "last_gallery_refresh_at": "2026-09-28T00:19:37.230363+02:00"
     },
@@ -18952,7 +19085,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T19:33:24.287425+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T19:33:24.287425+02:00",
       "last_gallery_refresh_at": "2026-10-14T19:33:24.287425+02:00"
     },
@@ -20253,7 +20386,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T14:29:03.440689+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T14:29:03.440689+02:00",
       "last_gallery_refresh_at": "2026-10-14T14:29:03.440689+02:00"
     },
@@ -21111,7 +21244,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-23T14:05:16.666401+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-23T14:05:16.666401+02:00",
       "last_gallery_refresh_at": "2026-09-23T14:05:16.666401+02:00"
     },
@@ -21171,7 +21304,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T05:47:09.611721+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-07T14:19:21.070626+02:00"
     },
     {
@@ -21242,7 +21375,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-07T08:35:26.245872+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-07T08:35:26.245872+02:00",
       "last_gallery_refresh_at": "2026-10-07T08:35:26.245872+02:00"
     },
@@ -21925,7 +22058,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-22T19:21:58.496644+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-22T19:21:58.496644+02:00",
       "last_gallery_refresh_at": "2026-09-22T19:21:58.496644+02:00"
     },
@@ -24487,6 +24620,62 @@
       "last_gallery_refresh_at": "2026-09-06T21:00:31.650040+02:00"
     },
     {
+      "id": "4zida:6ad07faa161f04bab10f3b49",
+      "source": "4zida",
+      "source_id": "6ad07faa161f04bab10f3b49",
+      "title": "Jednosoban stan za izdavanje, Vojvode Stepe 327, 400€, 44m²",
+      "url": "https://www.4zida.rs/izdavanje-stanova/vojvode-stepe-vozdovac-opstina-beograd/jednosoban-stan/6ad07faa161f04bab10f3b49",
+      "images": [
+        "https://resizer2.4zida.rs/p3TDmRqVtFJIjuS6De7LO2reaZy-Y5U4GvtJpaKYLls/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDdmYWExNjFmMDRiYWIxMGYzYjQ5LzljODY0ZWNhNTBfd20.jpeg",
+        "https://resizer2.4zida.rs/fV8qrX89LgBMD2cM78t23c20uBnGcAe9CTzqCWyTLIk/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDdmYWExNjFmMDRiYWIxMGYzYjQ5L2FiZWNmNzI3MTVfd20.jpeg",
+        "https://resizer2.4zida.rs/RRjoQEp34_-gp5hqscXPetWMizE36j5Ekf00dhuQ4Kc/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDdmYWExNjFmMDRiYWIxMGYzYjQ5LzcyMzg4YjA5YWFfd20.jpeg"
+      ],
+      "image_url": "https://resizer2.4zida.rs/p3TDmRqVtFJIjuS6De7LO2reaZy-Y5U4GvtJpaKYLls/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDdmYWExNjFmMDRiYWIxMGYzYjQ5LzljODY0ZWNhNTBfd20.jpeg",
+      "expected_image_count": null,
+      "price_eur": 400,
+      "address": "Vojvode Stepe 327",
+      "neighborhood": "Vojvode Stepe",
+      "formatted_address": "Vojvode Stepe 327",
+      "approximate_location": true,
+      "lat": 44.764225551775,
+      "lon": 20.483398424467,
+      "area_m2": 44.0,
+      "rooms": "Jednosoban",
+      "furnished": true,
+      "heating": "Centralno",
+      "average_minutes": 37.1,
+      "destination_averages": [
+        47.2,
+        27.1
+      ],
+      "worst_sample_minutes": 50.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          46.6,
+          50.6,
+          42.7,
+          48.7
+        ],
+        "1": [
+          27.4,
+          30.4,
+          24.4,
+          26.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_gallery_refresh_at": "2026-10-15T11:21:12.149959+02:00"
+    },
+    {
       "id": "oglasi_rs:03-3968350",
       "source": "oglasi_rs",
       "source_id": "03-3968350",
@@ -25459,7 +25648,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T14:29:03.440689+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T14:29:03.440689+02:00",
       "last_gallery_refresh_at": "2026-10-14T14:29:03.440689+02:00"
     },
@@ -27041,7 +27230,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T13:12:19.722701+02:00",
-      "last_seen_in_search_at": "2026-10-14T14:29:03.440689+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T13:12:19.722701+02:00",
       "last_gallery_refresh_at": "2026-10-13T13:12:19.722701+02:00"
     },
@@ -27101,7 +27290,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T13:12:19.722701+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T13:12:19.722701+02:00",
       "last_gallery_refresh_at": "2026-10-13T13:12:19.722701+02:00"
     },
@@ -27633,7 +27822,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T09:05:13.934972+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00"
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00"
     },
     {
       "id": "4zida:6aa3c6aaf3bbd26c640b62b1",
@@ -28177,7 +28366,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-12T18:57:23.754690+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-12T18:57:23.754690+02:00",
       "last_gallery_refresh_at": "2026-10-12T18:57:23.754690+02:00"
     },
@@ -30614,6 +30803,78 @@
       "last_gallery_refresh_at": "2026-10-02T18:48:09.967413+02:00"
     },
     {
+      "id": "halo_oglasi:5425647827522",
+      "source": "halo_oglasi",
+      "source_id": "5425647827522",
+      "title": "Useljiv stan",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/useljiv-stan/5425647827522?kid=1",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261015/m/useljiv-stan-5425647827522-71817333710.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg",
+        "https://img.halooglasi.com/slike/oglasi/Thumbs/261015/l/useljiv-stan-5425647827522-71817333710.jpg",
+        "https://img.halooglasi.com/slike/kategorije/nekretnine-share-image-2.png",
+        "https://img.halooglasi.com",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260906/m/stan-zvezdara-bulevar-kralja-aleksandra-okret-5425647605738-71816931415.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/250305/m/mirijevo-1-5-nov-useljiv-polunamesten-odlican-5425645297121-71810982540.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261011/m/stan-izdavanje-5425647807008-71817294482.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261005/m/izdajem-stan-kod-vuka-5425647759757-71817231682.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260923/m/izdajem-jednosoban-stan-5425647723191-71817113776.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/250120/m/izdaje-se-garsonjera-na-zvezdari-u-zvezdarsko-5425645155506-71810553390.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260908/m/djeram-pijaca---vukov-spomenik-1-0-sa-terasom-5425644431348-71816953499.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261013/m/konjarnik-izdajem-garsonjeru-idealna-lokacija-5425647586068-71817313802.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260612/m/gradska-bolnica-25m2-vpr-eg-5425647272892-71816066890.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/261015/m/useljiv-stan-5425647827522-71817333710.jpg",
+      "expected_image_count": null,
+      "price_eur": 350,
+      "address": "30 m",
+      "neighborhood": "Cvetkova pijaca",
+      "formatted_address": "30 m",
+      "approximate_location": true,
+      "lat": 44.793335,
+      "lon": 20.5035253,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": true,
+      "heating": "CG",
+      "average_minutes": 39.4,
+      "destination_averages": [
+        47.2,
+        31.6
+      ],
+      "worst_sample_minutes": 50.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          46.6,
+          50.6,
+          42.7,
+          48.7
+        ],
+        "1": [
+          34.4,
+          30.4,
+          29.4,
+          32.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_gallery_refresh_at": "2026-10-15T11:21:12.149959+02:00"
+    },
+    {
       "id": "halo_oglasi:5425647789868",
       "source": "halo_oglasi",
       "source_id": "5425647789868",
@@ -31694,7 +31955,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T20:22:41.298217+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T20:22:41.298217+02:00",
       "last_gallery_refresh_at": "2026-10-13T20:22:41.298217+02:00"
     },
@@ -32183,7 +32444,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T01:35:06.707370+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T01:35:06.707370+02:00",
       "last_gallery_refresh_at": "2026-10-13T01:35:06.707370+02:00"
     },
@@ -33480,7 +33741,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T20:22:41.298217+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T20:22:41.298217+02:00",
       "last_gallery_refresh_at": "2026-10-13T20:22:41.298217+02:00"
     },
@@ -33818,7 +34079,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T01:35:06.707370+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T01:35:06.707370+02:00",
       "last_gallery_refresh_at": "2026-10-13T01:35:06.707370+02:00"
     },
@@ -39328,7 +39589,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-11T15:07:55.923592+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-11T15:07:55.923592+02:00",
       "last_gallery_refresh_at": "2026-10-11T15:07:55.923592+02:00"
     },
@@ -40361,7 +40622,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T01:35:06.707370+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T01:35:06.707370+02:00",
       "last_gallery_refresh_at": "2026-10-13T01:35:06.707370+02:00"
     },
@@ -41142,7 +41403,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T05:47:09.611721+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00"
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00"
     },
     {
       "id": "halo_oglasi:5425647644919",
@@ -42929,7 +43190,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T14:29:03.440689+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T14:29:03.440689+02:00",
       "last_gallery_refresh_at": "2026-10-14T14:29:03.440689+02:00"
     },
@@ -44047,7 +44308,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T01:35:06.707370+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T01:35:06.707370+02:00",
       "last_gallery_refresh_at": "2026-10-13T01:35:06.707370+02:00"
     },
@@ -44751,7 +45012,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-09T18:31:18.018928+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-09T18:31:18.018928+02:00",
       "last_gallery_refresh_at": "2026-10-09T18:31:18.018928+02:00"
     },
@@ -44822,7 +45083,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-01T17:43:20.365547+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-01T17:43:20.365547+02:00",
       "last_gallery_refresh_at": "2026-10-01T17:43:20.365547+02:00"
     },
@@ -45358,7 +45619,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T19:33:24.287425+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T19:33:24.287425+02:00",
       "last_gallery_refresh_at": "2026-10-14T19:33:24.287425+02:00"
     },
@@ -46775,7 +47036,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-08T23:28:10.721073+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-08T23:28:10.721073+02:00",
       "last_gallery_refresh_at": "2026-09-08T23:28:10.721073+02:00"
     },
@@ -46915,7 +47176,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-02T13:24:05.072199+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-02T13:24:05.072199+02:00",
       "last_gallery_refresh_at": "2026-10-02T13:24:05.072199+02:00"
     },
@@ -48802,7 +49063,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T20:22:41.298217+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T20:22:41.298217+02:00",
       "last_gallery_refresh_at": "2026-10-13T20:22:41.298217+02:00"
     },
@@ -49927,7 +50188,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T19:33:24.287425+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T19:33:24.287425+02:00",
       "last_gallery_refresh_at": "2026-10-14T19:33:24.287425+02:00"
     },
@@ -50221,7 +50482,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-11T15:07:55.923592+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-11T15:07:55.923592+02:00",
       "last_gallery_refresh_at": "2026-10-11T15:07:55.923592+02:00"
     },
@@ -51513,7 +51774,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T13:12:19.722701+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T13:12:19.722701+02:00",
       "last_gallery_refresh_at": "2026-10-13T13:12:19.722701+02:00"
     },
@@ -51577,7 +51838,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T20:22:41.298217+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T20:22:41.298217+02:00",
       "last_gallery_refresh_at": "2026-10-13T20:22:41.298217+02:00"
     },
@@ -52501,7 +52762,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T14:29:03.440689+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T14:29:03.440689+02:00",
       "last_gallery_refresh_at": "2026-10-14T14:29:03.440689+02:00"
     },
@@ -52582,7 +52843,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T22:56:19.218589+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T22:56:19.218589+02:00",
       "last_gallery_refresh_at": "2026-10-14T22:56:19.218589+02:00"
     },
@@ -53206,7 +53467,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T01:35:06.707370+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T01:35:06.707370+02:00",
       "last_gallery_refresh_at": "2026-10-13T01:35:06.707370+02:00"
     },
@@ -55527,7 +55788,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-11T20:09:40.175393+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-11T20:09:40.175393+02:00",
       "last_gallery_refresh_at": "2026-10-11T20:09:40.175393+02:00"
     },
@@ -58760,7 +59021,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T20:22:41.298217+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T20:22:41.298217+02:00",
       "last_gallery_refresh_at": "2026-10-13T20:22:41.298217+02:00"
     },
@@ -60557,6 +60818,78 @@
       "last_gallery_refresh_at": "2026-09-08T23:28:10.721073+02:00"
     },
     {
+      "id": "halo_oglasi:5425646758641",
+      "source": "halo_oglasi",
+      "source_id": "5425646758641",
+      "title": "Izdajem stan Rebeke Vest 56A",
+      "url": "https://www.halooglasi.com/nekretnine/izdavanje-stanova/izdajem-stan-rebeke-vest-56a/5425646758641?kid=1",
+      "images": [
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261015/m/izdajem-stan-rebeke-vest-56a-5425646758641-71817334837.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/not-edit.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/edit-yes.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/exit-draw.png",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/no-image.jpg",
+        "https://smsprint.halooglasi.com/Content/Quiddita/Widgets/Product/Stylesheets/img/dugme-saznaj-vise.png",
+        "https://img.halooglasi.com/slike/promo/HO-strajk-3.jpg",
+        "https://img.halooglasi.com/slike/oglasi/Thumbs/261015/l/izdajem-stan-rebeke-vest-56a-5425646758641-71817334837.jpg",
+        "https://img.halooglasi.com/slike/kategorije/nekretnine-share-image-2.png",
+        "https://img.halooglasi.com",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/240916/m/izdajem-dvosoban-stan-350e-5425644802314-71809434319.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/250201/m/namesten-stan-u-mirijevu-5425645190169-71810663542.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/250402/m/jednosoban-stan-za-zakup-zvezdara-kluz-5425645401104-71811270000.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/260831/m/dvosoban-stan-mirijevo-60-kvadrata-5425647605645-71816862647.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261008/m/vukov-spomenik-stan-u-kuci-useljiv-odmah-5425647794810-71817265111.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261014/m/mirijevo-izdavanje-50-m2-namesten-id1797-5425647821763-71817325926.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261013/m/mirijevo-44m2-udobno-opremljen-5425647819451-71817315293.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261013/m/dvosoban-stan-40-m-mirijevo-zvezdara-2-sprat-5425647816526-71817311020.jpg",
+        "https://img.halooglasi.com//slike/oglasi/Thumbs/261009/m/mirijevo-1-5-namesten-5425647797639-71817271153.jpg"
+      ],
+      "image_url": "https://img.halooglasi.com//slike/oglasi/Thumbs/261015/m/izdajem-stan-rebeke-vest-56a-5425646758641-71817334837.jpg",
+      "expected_image_count": null,
+      "price_eur": 350,
+      "address": "Rebeke Vest",
+      "neighborhood": "Mali Mokri Lug",
+      "formatted_address": "Rebeke Vest",
+      "approximate_location": true,
+      "lat": 44.7825919,
+      "lon": 20.517734,
+      "area_m2": null,
+      "rooms": null,
+      "furnished": null,
+      "heating": null,
+      "average_minutes": 50.8,
+      "destination_averages": [
+        61.4,
+        40.1
+      ],
+      "worst_sample_minutes": 65.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          59.6,
+          65.6,
+          64.6
+        ],
+        "1": [
+          39.4,
+          42.4,
+          38.4,
+          40.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_gallery_refresh_at": "2026-10-15T11:21:12.149959+02:00"
+    },
+    {
       "id": "halo_oglasi:5425647578255",
       "source": "halo_oglasi",
       "source_id": "5425647578255",
@@ -61069,7 +61402,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-09T23:11:43.454102+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-09T23:11:43.454102+02:00",
       "last_gallery_refresh_at": "2026-10-09T23:11:43.454102+02:00"
     },
@@ -61491,7 +61824,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-09T13:57:36.598624+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-09T13:57:36.598624+02:00",
       "last_gallery_refresh_at": "2026-09-09T13:57:36.598624+02:00"
     },
@@ -62353,6 +62686,65 @@
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T05:47:09.611721+02:00",
       "last_seen_in_search_at": "2026-09-20T21:49:57.507062+02:00"
+    },
+    {
+      "id": "4zida:6ad06e26161f04bab10f3b1a",
+      "source": "4zida",
+      "source_id": "6ad06e26161f04bab10f3b1a",
+      "title": "Jednosoban stan za izdavanje, Kumodraž, 350€, 35m²",
+      "url": "https://www.4zida.rs/izdavanje-stanova/kumodraz-vozdovac-opstina-beograd/jednosoban-stan/6ad06e26161f04bab10f3b1a",
+      "images": [
+        "https://resizer2.4zida.rs/boi-fvAIBU_p8sldEngAohXpqJbFwzVG_GL9PxXmbzY/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDZlMjYxNjFmMDRiYWIxMGYzYjFhL2M1YzNlZWJjNDlfd20.jpeg",
+        "https://resizer2.4zida.rs/ezPt-gO2_5VgulRWTg8bm6PiDHvWOhgVhwdmc-QlgvQ/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDZlMjYxNjFmMDRiYWIxMGYzYjFhLzAwNTExNGEwNDNfd20.jpeg",
+        "https://resizer2.4zida.rs/iiIHGl3h-gAfhnG88X992V9hTwCymRPnMzE-GvnOJX8/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDZlMjYxNjFmMDRiYWIxMGYzYjFhLzcyNzQyOGI1ZDlfd20.jpeg",
+        "https://resizer2.4zida.rs/fiaPtaGe5k-W1ByM-2W9Y-56GGnEJ72mkVtZPr5DoDs/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDZlMjYxNjFmMDRiYWIxMGYzYjFhLzY4MzZiNjQ5ODZfd20.jpeg",
+        "https://resizer2.4zida.rs/O2bJfVpBysXwIrDstIg5YUHiLNnvPHDIewC7xWOpPxw/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDZlMjYxNjFmMDRiYWIxMGYzYjFhLzc2NzJjZGVjOWRfd20.jpeg",
+        "https://resizer2.4zida.rs/OFZhuwR4uycw9FCpvVedRylBKWjsUw36UebvBtES9zY/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDZlMjYxNjFmMDRiYWIxMGYzYjFhL2VmMWQzZWI4OTFfd20.jpeg"
+      ],
+      "image_url": "https://resizer2.4zida.rs/boi-fvAIBU_p8sldEngAohXpqJbFwzVG_GL9PxXmbzY/rs:fit:1920:1080:0/bG9jYWw6Ly8vNmFkMDZlMjYxNjFmMDRiYWIxMGYzYjFhL2M1YzNlZWJjNDlfd20.jpeg",
+      "expected_image_count": null,
+      "price_eur": 350,
+      "address": "Kumodraž",
+      "neighborhood": "Kumodraž",
+      "formatted_address": "Kumodraž",
+      "approximate_location": true,
+      "lat": 44.744224491003,
+      "lon": 20.504537624758,
+      "area_m2": 35.0,
+      "rooms": "Jednosoban",
+      "furnished": true,
+      "heating": null,
+      "average_minutes": 52.0,
+      "destination_averages": [
+        64.1,
+        39.9
+      ],
+      "worst_sample_minutes": 70.6,
+      "sample_times": [
+        "07:30",
+        "09:00",
+        "14:00",
+        "17:00"
+      ],
+      "route_samples": {
+        "0": [
+          55.8,
+          70.6,
+          65.6,
+          64.6
+        ],
+        "1": [
+          36.4,
+          44.4,
+          38.4,
+          40.4
+        ]
+      },
+      "routing_method": "Belgrade GTFS + approximate walking",
+      "first_seen_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_active_check_at": "2026-10-15T11:21:12.149959+02:00",
+      "last_gallery_refresh_at": "2026-10-15T11:21:12.149959+02:00"
     },
     {
       "id": "halo_oglasi:5425647697044",
@@ -64150,7 +64542,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-26T14:24:07.689420+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-26T14:24:07.689420+02:00",
       "last_gallery_refresh_at": "2026-09-26T14:24:07.689420+02:00"
     },
@@ -64797,7 +65189,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-09T11:33:43.723602+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-09T11:33:43.723602+02:00",
       "last_gallery_refresh_at": "2026-10-09T11:33:43.723602+02:00"
     },
@@ -66920,7 +67312,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-06T13:37:41.378458+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00"
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00"
     },
     {
       "id": "halo_oglasi:5425645998671",
@@ -69905,7 +70297,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T14:29:03.440689+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T14:29:03.440689+02:00",
       "last_gallery_refresh_at": "2026-10-14T14:29:03.440689+02:00"
     },
@@ -70042,7 +70434,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-11T15:07:55.923592+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-11T15:07:55.923592+02:00",
       "last_gallery_refresh_at": "2026-10-11T15:07:55.923592+02:00"
     },
@@ -70513,7 +70905,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T22:56:19.218589+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T22:56:19.218589+02:00",
       "last_gallery_refresh_at": "2026-10-14T22:56:19.218589+02:00"
     },
@@ -71683,7 +72075,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T19:33:24.287425+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T19:33:24.287425+02:00",
       "last_gallery_refresh_at": "2026-10-14T19:33:24.287425+02:00"
     },
@@ -71897,7 +72289,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-02T18:48:09.967413+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-02T18:48:09.967413+02:00",
       "last_gallery_refresh_at": "2026-10-02T18:48:09.967413+02:00"
     },
@@ -72346,7 +72738,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T01:04:46.023350+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T01:04:46.023350+02:00",
       "last_gallery_refresh_at": "2026-10-14T01:04:46.023350+02:00"
     },
@@ -74428,7 +74820,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T01:04:46.023350+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T01:04:46.023350+02:00",
       "last_gallery_refresh_at": "2026-10-14T01:04:46.023350+02:00"
     },
@@ -74572,7 +74964,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-13T20:22:41.298217+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-13T20:22:41.298217+02:00",
       "last_gallery_refresh_at": "2026-10-13T20:22:41.298217+02:00"
     },
@@ -75591,7 +75983,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-06T18:44:40.980608+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-06T18:44:40.980608+02:00",
       "last_gallery_refresh_at": "2026-10-06T18:44:40.980608+02:00"
     },
@@ -76044,7 +76436,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-10-14T22:56:19.218589+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-10-14T22:56:19.218589+02:00",
       "last_gallery_refresh_at": "2026-10-14T22:56:19.218589+02:00"
     },
@@ -76259,7 +76651,7 @@
       },
       "routing_method": "Belgrade GTFS + approximate walking",
       "first_seen_at": "2026-09-18T21:42:58.723559+02:00",
-      "last_seen_in_search_at": "2026-10-15T06:25:46.182883+02:00",
+      "last_seen_in_search_at": "2026-10-15T11:21:12.149959+02:00",
       "last_active_check_at": "2026-09-18T21:42:58.723559+02:00",
       "last_gallery_refresh_at": "2026-09-18T21:42:58.723559+02:00"
     },
